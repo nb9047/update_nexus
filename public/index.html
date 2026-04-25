@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nexus Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & ROOT ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:#0a0a0f; --surface:#111118; --surface2:#18181f; --surface3:#1f1f28;
+  --border:#2a2a38; --accent:#7c6af7; --accent2:#f76ab4; --accent3:#6af7c8;
+  --text:#e8e8f0; --text2:#9090a8; --text3:#5a5a70;
+  --online:#4ade80; --offline:#555566; --danger:#f76a6a;
+  --admin:#f7c96a; --msg-own:#2a2040; --msg-other:#1a1a25;
+  --call-green:#22c55e; --call-red:#ef4444;
+  --sidebar-w: 280px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:'Syne',sans-serif;color:var(--text);}
+
+/* ── AUTH ─────────────────────────────────────────────────────────────────── */
+#auth-screen{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 20% 50%,#1a0f3a 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,#0f2a1a 0%,transparent 60%),var(--bg);position:relative;}
+#auth-screen::before{content:'';position:absolute;inset:0;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,var(--border) 39px,var(--border) 40px),
+                   repeating-linear-gradient(90deg,transparent,transparent 39px,var(--border) 39px,var(--border) 40px);opacity:.12;}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:420px;position:relative;
+  box-shadow:0 0 80px rgba(124,106,247,.15),0 8px 32px rgba(0,0,0,.4);}
+.auth-box::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.auth-logo{text-align:center;margin-bottom:32px;}
+.auth-logo .logo-mark{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;font-size:28px;margin-bottom:12px;}
+.auth-logo h1{font-size:28px;font-weight:800;letter-spacing:-.5px;}
+.auth-logo h1 span{color:var(--accent);}
+.auth-logo p{color:var(--text2);font-size:13px;margin-top:4px;font-family:'DM Mono',monospace;}
+.auth-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:28px;}
+.auth-tab{flex:1;padding:10px;border:none;border-radius:8px;background:transparent;color:var(--text2);
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+.auth-tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(124,106,247,.4);}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-family:'DM Mono',monospace;letter-spacing:.5px;text-transform:uppercase;}
+.field input{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Syne',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,247,.15);}
+.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#9b8bf7);border:none;border-radius:10px;
+  color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,106,247,.4);}
+.auth-error{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;font-family:'DM Mono',monospace;display:none;}
+
+/* ── APP LAYOUT ───────────────────────────────────────────────────────────── */
+#app-screen{width:100%;height:100%;display:none;flex-direction:row;position:relative;}
+
+/* ── SIDEBAR ──────────────────────────────────────────────────────────────── */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100%;z-index:10;transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sidebar-brand{display:flex;align-items:center;gap:10px;}
+.brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.brand-name{font-size:18px;font-weight:800;}
+.brand-name span{color:var(--accent);}
+.logout-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+.me-info{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface2);}
+.me-info .avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;}
+.me-info .uname{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;}
+.me-info .ustatus{font-size:11px;color:var(--online);font-family:'DM Mono',monospace;}
+.admin-crown{font-size:13px;}
+.section-title{padding:14px 20px 6px;font-size:11px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+.sidebar-item{padding:9px 20px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:background .15s;position:relative;}
+.sidebar-item:hover{background:var(--surface2);}
+.sidebar-item.active{background:var(--surface3);}
+.sidebar-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--accent);border-radius:0 2px 2px 0;}
+.sidebar-item.admin-item.active::before{background:var(--admin);}
+.s-icon{width:36px;height:36px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.sidebar-item.active .s-icon{background:rgba(124,106,247,.2);}
+.s-info{flex:1;min-width:0;}
+.s-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.s-sub{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot.on{background:var(--online);box-shadow:0 0 6px var(--online);}
+.dot.off{background:var(--offline);}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+.users-list{flex:1;overflow-y:auto;}
+.users-list::-webkit-scrollbar{width:4px;}
+.users-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── MOBILE SIDEBAR OVERLAY ───────────────────────────────────────────────── */
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9;backdrop-filter:blur(2px);}
+
+/* ── HAMBURGER (mobile) ───────────────────────────────────────────────────── */
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);}
+.hamburger span{display:block;width:18px;height:2px;background:var(--text2);border-radius:2px;transition:all .2s;}
+
+/* ── CHAT MAIN ────────────────────────────────────────────────────────────── */
+.chat-main{flex:1;display:flex;flex-direction:column;height:100%;background:var(--bg);overflow:hidden;min-width:0;}
+.chat-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface);flex-shrink:0;}
+.ch-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ch-icon.user{background:var(--surface2);font-size:20px;font-weight:700;color:var(--accent);}
+.ch-info{flex:1;min-width:0;}
+.ch-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ch-sub{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px;display:flex;align-items:center;gap:5px;}
+.ch-sub .dot{width:6px;height:6px;}
+.chat-header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.call-btn{width:38px;height:38px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.call-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.12);}
+.call-btn.video:hover{border-color:var(--accent3);color:var(--accent3);background:rgba(106,247,200,.08);}
+.admin-viewing-badge{background:rgba(247,201,106,.15);border:1px solid rgba(247,201,106,.3);color:var(--admin);font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:6px;}
+
+/* ── MESSAGES ─────────────────────────────────────────────────────────────── */
+.messages-area{flex:1;overflow-y:auto;padding:20px 20px;display:flex;flex-direction:column;gap:4px;}
+.messages-area::-webkit-scrollbar{width:4px;}
+.messages-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.msg-group{margin-bottom:14px;display:flex;flex-direction:column;animation:slideUp .2s ease;}
+.msg-group.own{align-items:flex-end;}
+.msg-group.other{align-items:flex-start;}
+.msg-sender-label{font-size:12px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.msg-group.own .msg-sender-label{color:var(--accent2);}
+.msg-bubble{max-width:min(68%, 420px);padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.6;word-break:break-word;}
+.msg-group.own .msg-bubble{background:var(--msg-own);border:1px solid rgba(124,106,247,.25);border-bottom-right-radius:4px;}
+.msg-group.other .msg-bubble{background:var(--msg-other);border:1px solid var(--border);border-bottom-left-radius:4px;}
+.msg-time{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:3px;padding:0 4px;}
+.msg-group.own .msg-time{text-align:right;}
+.msg-image img{max-width:280px;max-height:280px;border-radius:10px;display:block;cursor:pointer;transition:opacity .2s;}
+.msg-image img:hover{opacity:.9;}
+.msg-video video{max-width:280px;border-radius:10px;display:block;}
+.msg-file{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color .2s;text-decoration:none;}
+.msg-file:hover{border-color:var(--accent);}
+.msg-file .fi{font-size:24px;flex-shrink:0;}
+.msg-file .fn{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:var(--text);}
+.msg-file .fs{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+.date-div{display:flex;align-items:center;gap:12px;margin:12px 0;color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;}
+.date-div::before,.date-div::after{content:'';flex:1;height:1px;background:var(--border);}
+.sys-msg{text-align:center;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin:8px 0;}
+/* Call log in messages */
+.call-log-bubble{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;}
+.call-log-bubble .cl-icon{font-size:16px;}
+
+/* ── INPUT ────────────────────────────────────────────────────────────────── */
+.input-wrap{padding:12px 16px 14px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.preview-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.preview-item{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;font-family:'DM Mono',monospace;}
+.preview-thumb{width:32px;height:32px;border-radius:6px;object-fit:cover;}
+.rm-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 0 0 4px;transition:color .15s;}
+.rm-btn:hover{color:var(--danger);}
+.input-row{display:flex;align-items:flex-end;gap:8px;}
+.action-btn{width:40px;height:40px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.action-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.1);}
+.msg-input{flex:1;resize:none;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px 16px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color .2s;min-height:44px;max-height:120px;line-height:1.5;}
+.msg-input:focus{border-color:var(--accent);}
+.msg-input::placeholder{color:var(--text3);}
+.send-btn{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#9b8bf7);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,247,.5);}
+
+/* ── NO CHAT ──────────────────────────────────────────────────────────────── */
+.no-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text3);}
+.no-chat-icon{font-size:56px;}
+.no-chat h2{font-size:20px;color:var(--text2);font-weight:700;}
+.no-chat p{font-size:13px;font-family:'DM Mono',monospace;max-width:260px;text-align:center;}
+
+/* ── ADMIN PANEL ──────────────────────────────────────────────────────────── */
+#admin-panel{flex:1;display:none;flex-direction:column;height:100%;overflow:hidden;}
+.admin-header{padding:18px 24px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:14px;}
+.admin-header h2{font-size:18px;font-weight:800;color:var(--admin);}
+.admin-header p{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:3px;}
+.admin-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;gap:20px;flex-wrap:wrap;}
+.admin-convos{width:300px;flex-shrink:0;}
+.admin-convos h3{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;}
+.convo-item{padding:12px 14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:8px;transition:all .2s;background:var(--surface);}
+.convo-item:hover{border-color:var(--admin);background:rgba(247,201,106,.05);}
+.convo-item.active{border-color:var(--admin);background:rgba(247,201,106,.08);}
+.convo-type{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+.convo-parts{font-size:14px;font-weight:700;}
+.convo-meta{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:3px;}
+.admin-msgs{flex:1;min-width:240px;}
+.admin-msgs h3{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;}
+.admin-msgs-inner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;min-height:200px;overflow-y:auto;max-height:calc(100vh - 200px);}
+.admin-msgs-inner::-webkit-scrollbar{width:4px;}
+.admin-msgs-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.admin-empty{color:var(--text3);font-family:'DM Mono',monospace;font-size:13px;text-align:center;padding:40px;}
+
+/* ── LIGHTBOX ─────────────────────────────────────────────────────────────── */
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;}
+.lb-close{position:absolute;top:20px;right:24px;background:none;border:1px solid var(--border);border-radius:8px;padding:8px 16px;color:var(--text);cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;}
+
+/* ── INCOMING CALL OVERLAY ────────────────────────────────────────────────── */
+#incoming-call{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(12px);}
+#incoming-call.visible{display:flex;}
+.ic-card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:40px 48px;text-align:center;
+  box-shadow:0 0 80px rgba(124,106,247,.2),0 24px 48px rgba(0,0,0,.6);animation:slideUp .3s ease;position:relative;overflow:hidden;min-width:320px;}
+.ic-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.ic-pulse{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:#fff;margin:0 auto 24px;position:relative;}
+.ic-pulse::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(124,106,247,.4);animation:pulse-ring 1.5s ease-out infinite;}
+.ic-pulse::after{content:'';position:absolute;inset:-20px;border-radius:50%;border:1px solid rgba(124,106,247,.2);animation:pulse-ring 1.5s ease-out infinite .4s;}
+@keyframes pulse-ring{0%{transform:scale(.95);opacity:.8;}100%{transform:scale(1.15);opacity:0;}}
+.ic-name{font-size:24px;font-weight:800;margin-bottom:6px;}
+.ic-type{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:32px;}
+.ic-buttons{display:flex;gap:28px;justify-content:center;}
+.ic-btn{width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;font-size:26px;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+.ic-btn.accept{background:var(--call-green);color:#fff;}
+.ic-btn.accept:hover{transform:scale(1.1);box-shadow:0 8px 28px rgba(34,197,94,.5);}
+.ic-btn.decline{background:var(--call-red);color:#fff;}
+.ic-btn.decline:hover{transform:scale(1.1);box-shadow:0 8px 28px rgba(239,68,68,.5);}
+.ic-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-top:8px;}
+
+/* ── ACTIVE CALL OVERLAY ─────────────────────────────────────────────────── */
+#active-call{position:fixed;inset:0;z-index:2000;display:none;flex-direction:column;
+  background:#000;align-items:center;justify-content:center;}
+#active-call.visible{display:flex;}
+#remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0a0a0f;}
+#local-video{position:absolute;bottom:100px;right:20px;width:120px;height:90px;border-radius:12px;object-fit:cover;background:#111;border:2px solid var(--border);z-index:10;}
+.call-ui{position:absolute;bottom:0;left:0;right:0;padding:32px 24px;background:linear-gradient(transparent,rgba(0,0,0,.85));display:flex;flex-direction:column;align-items:center;gap:16px;z-index:10;}
+.call-info{text-align:center;}
+.call-peer-name{font-size:22px;font-weight:700;}
+.call-status{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:4px;}
+.call-controls{display:flex;gap:20px;align-items:center;}
+.ctrl-btn{width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:rgba(255,255,255,.15);color:#fff;backdrop-filter:blur(8px);}
+.ctrl-btn:hover{background:rgba(255,255,255,.25);}
+.ctrl-btn.end-call{background:var(--call-red);box-shadow:0 4px 20px rgba(239,68,68,.5);}
+.ctrl-btn.end-call:hover{background:#dc2626;box-shadow:0 8px 28px rgba(239,68,68,.6);}
+.ctrl-btn.muted,.ctrl-btn.cam-off{background:rgba(239,68,68,.25);color:var(--call-red);}
+/* Audio-only call background */
+#active-call.audio-only #remote-video{display:none;}
+#active-call.audio-only{background:radial-gradient(ellipse at center,#1a0f3a 0%,var(--bg) 80%);}
+.audio-only-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:800;color:#fff;margin-bottom:16px;}
+
+/* ── OUTGOING CALL ────────────────────────────────────────────────────────── */
+#outgoing-call{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(12px);}
+#outgoing-call.visible{display:flex;}
+.oc-card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:40px 48px;text-align:center;
+  box-shadow:0 24px 48px rgba(0,0,0,.6);animation:slideUp .3s ease;min-width:300px;}
+.oc-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;margin:0 auto 16px;}
+.oc-name{font-size:20px;font-weight:700;margin-bottom:6px;}
+.oc-status{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:28px;}
+.oc-dots{display:inline-flex;gap:4px;vertical-align:middle;}
+.oc-dots span{width:5px;height:5px;border-radius:50%;background:var(--text2);display:inline-block;animation:bounce .9s ease-in-out infinite;}
+.oc-dots span:nth-child(2){animation-delay:.15s;}
+.oc-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,80%,100%{transform:scale(0);}40%{transform:scale(1);}}
+.oc-cancel{width:64px;height:64px;border-radius:50%;background:var(--call-red);border:none;cursor:pointer;font-size:24px;color:#fff;margin:0 auto;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.oc-cancel:hover{transform:scale(1.08);box-shadow:0 8px 28px rgba(239,68,68,.5);}
+
+/* ── NOTIFICATION TOAST ───────────────────────────────────────────────────── */
+#toast-container{position:fixed;top:16px;right:16px;z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;min-width:260px;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.5);pointer-events:all;animation:toastIn .3s ease;cursor:pointer;}
+.toast:hover{border-color:var(--accent);}
+.toast-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.toast-body{flex:1;min-width:0;}
+.toast-title{font-size:13px;font-weight:700;}
+.toast-msg{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.toast-close{font-size:14px;color:var(--text3);cursor:pointer;flex-shrink:0;padding:0 4px;}
+.toast-close:hover{color:var(--text);}
+@keyframes toastIn{from{transform:translateX(20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* ── SPINNER & ANIMATIONS ─────────────────────────────────────────────────── */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes slideUp{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+/* ── MOBILE RESPONSIVE ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 100%; }
+
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:280px;transform:translateX(-100%);z-index:100;
+  }
+  .sidebar.open{transform:translateX(0);}
+  #sidebar-overlay.visible{display:block;}
+  .hamburger{display:flex;}
+
+  .chat-header{padding:10px 14px;}
+  .ch-name{font-size:14px;}
+  .call-btn{width:34px;height:34px;font-size:15px;}
+
+  .messages-area{padding:14px 12px;}
+  .msg-bubble{max-width:85%;}
+  .msg-image img,.msg-video video{max-width:220px;}
+
+  .input-wrap{padding:10px 10px 12px;}
+  .action-btn{width:36px;height:36px;font-size:15px;}
+  .send-btn{width:40px;height:40px;}
+
+  #local-video{width:88px;height:66px;bottom:80px;right:12px;}
+  .call-controls{gap:14px;}
+  .ctrl-btn{width:48px;height:48px;font-size:18px;}
+  .ctrl-btn.end-call{width:58px;height:58px;}
+
+  .ic-card,.oc-card{padding:32px 28px;min-width:280px;}
+
+  .admin-body{flex-direction:column;}
+  .admin-convos{width:100%;}
+
+  .auth-box{width:92%;padding:32px 24px;}
+
+  #toast-container{top:auto;bottom:80px;right:12px;left:12px;}
+  .toast{min-width:unset;max-width:100%;}
+}
+
+@media (max-width: 400px) {
+  .ic-buttons{gap:20px;}
+  .ic-btn{width:58px;height:58px;font-size:22px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH ────────────────────────────────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-mark">⚡</div>
+      <h1>Nex<span>us</span></h1>
+      <p>// real-time messaging platform</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="login-form">
+      <div class="field"><label>Username</label><input type="text" id="login-user" placeholder="your_username" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In →</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="field"><label>Username</label><input type="text" id="reg-user" placeholder="cool_username" autocomplete="off" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <div class="field"><label>Password</label><input type="password" id="reg-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <button class="btn-primary" id="reg-btn" onclick="doRegister()">Create Account →</button>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- ── APP ─────────────────────────────────────────────────────────────────── -->
+<div id="app-screen">
+  <!-- Sidebar overlay for mobile -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-name">Nex<span>us</span></div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+
+    <div class="me-info">
+      <div class="avatar" id="me-avatar">?</div>
+      <div>
+        <div class="uname" id="me-uname">...</div>
+        <div class="ustatus">● Online</div>
+      </div>
+    </div>
+
+    <div class="section-title">Channels</div>
+    <div class="sidebar-item" id="item-general" onclick="openGeneral();closeSidebar()">
+      <div class="s-icon">#</div>
+      <div class="s-info">
+        <div class="s-name">General</div>
+        <div class="s-sub">Public channel</div>
+      </div>
+      <div class="badge" id="badge-general" style="display:none">0</div>
+    </div>
+
+    <div class="sidebar-item admin-item" id="admin-sidebar-btn" style="display:none" onclick="openAdmin();closeSidebar()">
+      <div class="s-icon">👑</div>
+      <div class="s-info">
+        <div class="s-name">Admin Panel</div>
+        <div class="s-sub">View all convos</div>
+      </div>
+    </div>
+
+    <div class="section-title">Direct Messages</div>
+    <div class="users-list" id="users-list"></div>
+  </div>
+
+  <!-- Chat Main -->
+  <div class="chat-main" id="chat-main">
+    <!-- Mobile header with hamburger -->
+    <div class="chat-header" id="chat-header">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="ch-icon" id="ch-icon">#</div>
+      <div class="ch-info">
+        <div class="ch-name" id="ch-name">Select a chat</div>
+        <div class="ch-sub" id="ch-sub"></div>
+      </div>
+      <div class="chat-header-actions" id="call-actions" style="display:none">
+        <button class="call-btn" title="Audio Call" onclick="startCall('audio')" id="audio-call-btn">📞</button>
+        <button class="call-btn video" title="Video Call" onclick="startCall('video')" id="video-call-btn">🎥</button>
+      </div>
+      <div class="admin-viewing-badge" id="admin-badge" style="display:none">👑 Admin View</div>
+    </div>
+
+    <div class="no-chat" id="no-chat">
+      <div class="no-chat-icon">💬</div>
+      <h2>Pick a conversation</h2>
+      <p>Select General chat or a user to start messaging</p>
+    </div>
+
+    <div id="chat-view" style="display:none;flex-direction:column;height:calc(100% - 68px);flex:1;">
+      <div class="messages-area" id="messages-area"></div>
+      <div class="input-wrap" id="input-wrap">
+        <div class="preview-bar" id="preview-bar"></div>
+        <div class="input-row">
+          <button class="action-btn" title="Image" onclick="pickFile('image')">🖼️</button>
+          <button class="action-btn" title="Video" onclick="pickFile('video')">📹</button>
+          <button class="action-btn" title="File" onclick="pickFile('file')">📎</button>
+          <textarea class="msg-input" id="msg-input" placeholder="Type a message…" rows="1"
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" style="display:none;">
+      <div class="admin-header">
+        <div>
+          <h2>👑 Admin Panel</h2>
+          <p>View all conversations as owner</p>
+        </div>
+      </div>
+      <div class="admin-body">
+        <div class="admin-convos">
+          <h3>All Conversations</h3>
+          <div id="admin-convo-list"></div>
+        </div>
+        <div class="admin-msgs">
+          <h3 id="admin-msgs-title">Select a conversation</h3>
+          <div class="admin-msgs-inner" id="admin-msgs-inner">
+            <div class="admin-empty">Select a conversation to view messages</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LIGHTBOX ─────────────────────────────────────────────────────────────── -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close">✕ Close</button>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<!-- ── INCOMING CALL ─────────────────────────────────────────────────────────── -->
+<div id="incoming-call">
+  <div class="ic-card">
+    <div class="ic-pulse" id="ic-avatar">?</div>
+    <div class="ic-name" id="ic-caller-name">Someone</div>
+    <div class="ic-type" id="ic-call-type">📞 Incoming Audio Call</div>
+    <div class="ic-buttons">
+      <div>
+        <button class="ic-btn decline" onclick="declineCall()" title="Decline">📵</button>
+        <div class="ic-label">Decline</div>
+      </div>
+      <div>
+        <button class="ic-btn accept" onclick="acceptCall()" title="Accept">📞</button>
+        <div class="ic-label">Accept</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── OUTGOING CALL ──────────────────────────────────────────────────────────── -->
+<div id="outgoing-call">
+  <div class="oc-card">
+    <div class="oc-avatar" id="oc-avatar">?</div>
+    <div class="oc-name" id="oc-peer-name">...</div>
+    <div class="oc-status">Calling <span class="oc-dots"><span></span><span></span><span></span></span></div>
+    <button class="oc-cancel" onclick="cancelCall()" title="Cancel">📵</button>
+  </div>
+</div>
+
+<!-- ── ACTIVE CALL ────────────────────────────────────────────────────────────── -->
+<div id="active-call">
+  <video id="remote-video" autoplay playsinline></video>
+  <video id="local-video" autoplay playsinline muted></video>
+  <div class="audio-only-avatar" id="audio-only-avatar" style="display:none">?</div>
+  <div class="call-ui">
+    <div class="call-info">
+      <div class="call-peer-name" id="call-peer-name">...</div>
+      <div class="call-status" id="call-status">Connecting...</div>
+    </div>
+    <div class="call-controls">
+      <button class="ctrl-btn" id="mute-btn" onclick="toggleMute()" title="Mute">🎤</button>
+      <button class="ctrl-btn end-call" onclick="endCall()" title="End Call">📵</button>
+      <button class="ctrl-btn" id="cam-btn" onclick="toggleCam()" title="Camera" style="display:none">📷</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ────────────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── FILE INPUTS ────────────────────────────────────────────────────────────── -->
+<input type="file" id="fi-image" accept="image/*" style="display:none" onchange="handleFileInput(event,'image')">
+<input type="file" id="fi-video" accept="video/*" style="display:none" onchange="handleFileInput(event,'video')">
+<input type="file" id="fi-any" style="display:none" onchange="handleFileInput(event,'file')">
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────────────────
+let ME = null;
+let currentChat = null;
+let ws = null;
+let onlineUsers = [];
+let unread = {};
+let pendingFiles = [];
+
+// ── WEBRTC STATE ─────────────────────────────────────────────────────────────
+let peerConn = null;
+let localStream = null;
+let callState = 'idle'; // idle | outgoing | incoming | active
+let activeCallId = null;
+let activeCallPeer = null;
+let activeCallType = 'audio'; // audio | video
+let pendingOffer = null;       // stored while in incoming state
+let callTimeoutTimer = null;
+let callDurationTimer = null;
+let isMuted = false;
+let isCamOff = false;
+
+// Ringtone using Web Audio API (tit-tit-tit)
+let ringtoneInterval = null;
+function playRingtone() {
+  stopRingtone();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  function beep() {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
+  }
+  beep();
+  ringtoneInterval = setInterval(beep, 600);
+}
+function stopRingtone() {
+  if (ringtoneInterval) { clearInterval(ringtoneInterval); ringtoneInterval = null; }
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+function switchTab(t) {
+  document.querySelectorAll('.auth-tab').forEach((el,i) => el.classList.toggle('active', i===(t==='login'?0:1)));
+  document.getElementById('login-form').style.display = t==='login'?'block':'none';
+  document.getElementById('register-form').style.display = t==='register'?'block':'none';
+  document.getElementById('auth-error').style.display = 'none';
+}
+function showErr(msg) { const e=document.getElementById('auth-error'); e.textContent=msg; e.style.display='block'; }
+async function doRegister() {
+  const u=document.getElementById('reg-user').value.trim();
+  const p=document.getElementById('reg-pass').value;
+  if(!u||!p){showErr('Please fill all fields');return;}
+  const btn=document.getElementById('reg-btn');
+  btn.innerHTML='<span class="spinner"></span>Creating…'; btn.disabled=true;
+  try {
+    const r=await api('/api/register','POST',{username:u,password:p});
+    if(r.error){showErr(r.error);return;}
+    startApp(r);
+  } finally { btn.innerHTML='Create Account →'; btn.disabled=false; }
+}
+async function doLogin() {
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  if(!u||!p){showErr('Please fill all fields');return;}
+  const btn=document.getElementById('login-btn');
+  btn.innerHTML='<span class="spinner"></span>Signing in…'; btn.disabled=true;
+  try {
+    const r=await api('/api/login','POST',{username:u,password:p});
+    if(r.error){showErr(r.error);return;}
+    startApp(r);
+  } finally { btn.innerHTML='Sign In →'; btn.disabled=false; }
+}
+async function doLogout() {
+  await api('/api/logout','POST',{});
+  ws&&ws.close(); ME=null; currentChat=null; pendingFiles=[];
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+}
+
+// ── APP START ────────────────────────────────────────────────────────────────
+async function startApp(user) {
+  ME = user;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app-screen').style.display='flex';
+  document.getElementById('me-uname').innerHTML = ME.username+(ME.isAdmin?'&nbsp;<span class="admin-crown">👑</span>':'');
+  document.getElementById('me-avatar').textContent = ME.username[0].toUpperCase();
+  if(ME.isAdmin) document.getElementById('admin-sidebar-btn').style.display='flex';
+  await loadUsers();
+  openGeneral();
+  connectWS();
+  requestNotifPermission();
+}
+async function initApp() {
+  try { const r=await api('/api/me','GET'); if(r.username) startApp(r); } catch{}
+}
+
+// ── WEBSOCKET ────────────────────────────────────────────────────────────────
+function connectWS() {
+  const proto = location.protocol==='https:'?'wss':'ws';
+  ws = new WebSocket(`${proto}://${location.host}`);
+  ws.onmessage = e => {
+    const data = JSON.parse(e.data);
+    if(data.type==='online_update'){onlineUsers=data.users;renderUsers();}
+    else if(data.type==='message') handleIncomingMsg(data);
+    // WebRTC signaling
+    else if(data.type==='call_offer') handleCallOffer(data);
+    else if(data.type==='call_answer') handleCallAnswer(data);
+    else if(data.type==='ice_candidate') handleIceCandidate(data);
+    else if(data.type==='call_decline') handleCallDeclined(data);
+    else if(data.type==='call_end') handleCallEnded(data);
+    else if(data.type==='call_timeout') handleCallEnded(data);
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+}
+
+function handleIncomingMsg(data) {
+  if(data.channel==='general') {
+    if(currentChat==='general') appendMsg(data.msg,'general');
+    else { unread.general=(unread.general||0)+1; updateGeneralBadge(); }
+    showMsgNotification(data.msg, 'General');
+  } else if(data.channel==='dm') {
+    const other = data.from===ME.username ? data.to : data.from;
+    if(currentChat&&currentChat.type==='dm'&&currentChat.user===other) appendMsg(data.msg,'dm');
+    else if(data.from!==ME.username) {
+      unread[other]=(unread[other]||0)+1;
+      renderUsers();
+      showMsgNotification(data.msg, data.from);
+    }
+  }
+}
+
+// ── USERS ────────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  const users = await api('/api/users','GET');
+  renderUsersList(users);
+}
+function renderUsers(){loadUsers();}
+function renderUsersList(users) {
+  if(!users) return;
+  const list = document.getElementById('users-list');
+  list.innerHTML = '';
+  users.filter(u=>u.username!==ME.username).sort((a,b)=>{
+    if(a.online&&!b.online)return -1;
+    if(!a.online&&b.online)return 1;
+    return a.username.localeCompare(b.username);
+  }).forEach(u => {
+    const isActive = currentChat&&currentChat.type==='dm'&&currentChat.user===u.username;
+    const unreadCount = unread[u.username]||0;
+    const div = document.createElement('div');
+    div.className = 'sidebar-item'+(isActive?' active':'');
+    div.id = 'item-dm-'+u.username;
+    div.onclick = () => { openDM(u.username); closeSidebar(); };
+    div.innerHTML = `
+      <div class="s-icon">${u.username[0].toUpperCase()}</div>
+      <div class="s-info">
+        <div class="s-name">${esc(u.username)}${u.isAdmin?'&nbsp;👑':''}</div>
+        <div class="s-sub">${u.online?'Online':'Offline'}</div>
+      </div>
+      <div class="dot ${u.online?'on':'off'}"></div>
+      ${unreadCount>0?`<div class="badge">${unreadCount}</div>`:''}`;
+    list.appendChild(div);
+  });
+}
+
+// ── SIDEBAR MOBILE ────────────────────────────────────────────────────────────
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('visible');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+}
+
+// ── OPEN CHATS ────────────────────────────────────────────────────────────────
+async function openGeneral() {
+  currentChat = 'general';
+  unread.general = 0; updateGeneralBadge();
+  setActive('item-general');
+  showChatView();
+  document.getElementById('ch-icon').textContent='#';
+  document.getElementById('ch-icon').className='ch-icon';
+  document.getElementById('ch-name').textContent='General';
+  document.getElementById('ch-sub').innerHTML='<span class="dot on"></span>Public channel · everyone';
+  document.getElementById('admin-badge').style.display='none';
+  document.getElementById('call-actions').style.display='none'; // no calling in General
+  const msgs = await api('/api/messages/general','GET');
+  renderMessages(msgs);
+}
+
+async function openDM(user) {
+  currentChat = {type:'dm', user};
+  unread[user] = 0;
+  setActive('item-dm-'+user);
+  showChatView();
+  document.getElementById('ch-icon').textContent = user[0].toUpperCase();
+  document.getElementById('ch-icon').className='ch-icon user';
+  document.getElementById('ch-name').textContent = user;
+  const users = await api('/api/users','GET');
+  const u = users.find(x=>x.username===user);
+  const isOnline = u&&u.online;
+  document.getElementById('ch-sub').innerHTML=`<span class="dot ${isOnline?'on':'off'}"></span>${isOnline?'Online':'Offline'}`;
+  document.getElementById('admin-badge').style.display='none';
+  document.getElementById('call-actions').style.display='flex'; // enable call buttons for DMs
+  // Update call-peer context
+  document.getElementById('oc-peer-name').textContent = user;
+  document.getElementById('oc-avatar').textContent = user[0].toUpperCase();
+  const msgs = await api(`/api/messages/dm/${encodeURIComponent(user)}`,'GET');
+  renderMessages(msgs);
+  renderUsers();
+}
+
+function openAdmin() {
+  if(!ME.isAdmin) return;
+  currentChat = {type:'admin'};
+  setActive('item-admin');
+  document.getElementById('no-chat').style.display='none';
+  document.getElementById('chat-view').style.display='none';
+  document.getElementById('admin-panel').style.display='flex';
+  document.getElementById('call-actions').style.display='none';
+  loadAdminConvos();
+}
+
+async function loadAdminConvos() {
+  const convos = await api('/api/admin/conversations','GET');
+  const list = document.getElementById('admin-convo-list');
+  list.innerHTML = '';
+  convos.sort((a,b)=>(b.last?.ts||0)-(a.last?.ts||0)).forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'convo-item';
+    div.onclick = () => loadAdminConvo(c, div);
+    const label = c.type==='general'?'# general':c.participants.join(' ↔ ');
+    const lastMsg = c.last?(c.last.type==='text'?c.last.content:'[media]'):'No messages';
+    div.innerHTML=`<div class="convo-type">${c.type}</div><div class="convo-parts">${esc(label)}</div><div class="convo-meta">${c.msgCount} msgs · ${esc(lastMsg.slice(0,40))}</div>`;
+    list.appendChild(div);
+  });
+}
+
+async function loadAdminConvo(c, el) {
+  document.querySelectorAll('.convo-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('admin-msgs-title').textContent = c.type==='general'?'#general':c.participants.join(' ↔ ');
+  let msgs;
+  if(c.type==='general') msgs = await api('/api/messages/general','GET');
+  else msgs = await api(`/api/admin/dm?a=${encodeURIComponent(c.participants[0])}&b=${encodeURIComponent(c.participants[1])}`,'GET');
+  const inner = document.getElementById('admin-msgs-inner');
+  if(!msgs||msgs.length===0){inner.innerHTML='<div class="admin-empty">No messages in this conversation</div>';return;}
+  inner.innerHTML = '';
+  let lastSender=null,group=null;
+  msgs.forEach(m => {
+    if(m.sender!==lastSender) {
+      group=document.createElement('div'); group.className='msg-group other';
+      const lbl=document.createElement('div'); lbl.className='msg-sender-label'; lbl.style.color='var(--admin)';
+      lbl.textContent=m.sender; group.appendChild(lbl); inner.appendChild(group); lastSender=m.sender;
+    }
+    const b=document.createElement('div'); b.className='msg-bubble';
+    if(m.type==='text'){b.textContent=m.content;}
+    else if(m.type==='image'){b.className='msg-bubble msg-image';const img=document.createElement('img');img.src=m.fileUrl;img.onclick=()=>openLightbox(m.fileUrl);b.appendChild(img);}
+    else if(m.type==='video'){b.className='msg-bubble msg-video';const v=document.createElement('video');v.src=m.fileUrl;v.controls=true;b.appendChild(v);}
+    else{b.innerHTML=`<a class="msg-file" href="${m.fileUrl}" download="${esc(m.fileName)}"><span class="fi">${fIcon(m.fileName)}</span><div><div class="fn">${esc(m.fileName)}</div><div class="fs">${fmtSz(m.fileSize)}</div></div></a>`;}
+    group.appendChild(b);
+    const t=document.createElement('div'); t.className='msg-time'; t.textContent=new Date(m.ts).toLocaleString(); group.appendChild(t);
+  });
+  inner.scrollTop=inner.scrollHeight;
+}
+
+function showChatView() {
+  document.getElementById('no-chat').style.display='none';
+  document.getElementById('admin-panel').style.display='none';
+  const cv=document.getElementById('chat-view');
+  cv.style.display='flex'; cv.style.flexDirection='column';
+}
+
+// ── MESSAGES RENDERING ────────────────────────────────────────────────────────
+function renderMessages(msgs) {
+  const area=document.getElementById('messages-area');
+  area.innerHTML='';
+  if(!msgs||msgs.length===0){area.innerHTML='<div class="sys-msg">No messages yet. Say hello! 👋</div>';return;}
+  let lastDate='',lastSender=null,group=null;
+  msgs.forEach(m=>{
+    const d=new Date(m.ts);
+    const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    if(ds!==lastDate){lastDate=ds;lastSender=null;const dd=document.createElement('div');dd.className='date-div';dd.textContent=ds;area.appendChild(dd);}
+    const isOwn=m.sender===ME.username;
+    if(m.sender!==lastSender){group=document.createElement('div');group.className='msg-group '+(isOwn?'own':'other');const lbl=document.createElement('div');lbl.className='msg-sender-label';lbl.textContent=isOwn?'You':m.sender;group.appendChild(lbl);area.appendChild(group);lastSender=m.sender;}
+    appendBubble(group,m,isOwn);
+    const t=document.createElement('div');t.className='msg-time';t.textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});group.appendChild(t);
+  });
+  area.scrollTop=area.scrollHeight;
+}
+
+function appendMsg(m) {
+  const area=document.getElementById('messages-area');
+  const isOwn=m.sender===ME.username;
+  const groups=area.querySelectorAll('.msg-group');
+  let group=groups.length>0&&groups[groups.length-1].dataset.sender===m.sender?groups[groups.length-1]:null;
+  if(!group){
+    group=document.createElement('div');group.className='msg-group '+(isOwn?'own':'other');
+    group.dataset.sender=m.sender;
+    const lbl=document.createElement('div');lbl.className='msg-sender-label';lbl.textContent=isOwn?'You':m.sender;
+    group.appendChild(lbl);area.appendChild(group);
+  }
+  appendBubble(group,m,isOwn);
+  const t=document.createElement('div');t.className='msg-time';t.textContent=new Date(m.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});group.appendChild(t);
+  area.scrollTop=area.scrollHeight;
+}
+
+function appendBubble(group,m,isOwn){
+  const b=document.createElement('div');b.className='msg-bubble';
+  if(m.type==='text'){b.textContent=m.content;}
+  else if(m.type==='image'){b.className='msg-bubble msg-image';const img=document.createElement('img');img.src=m.fileUrl;img.onclick=()=>openLightbox(m.fileUrl);b.appendChild(img);}
+  else if(m.type==='video'){b.className='msg-bubble msg-video';const v=document.createElement('video');v.src=m.fileUrl;v.controls=true;b.appendChild(v);}
+  else{b.innerHTML=`<a class="msg-file" href="${m.fileUrl}" download="${esc(m.fileName)}"><span class="fi">${fIcon(m.fileName)}</span><div><div class="fn">${esc(m.fileName)}</div><div class="fs">${fmtSz(m.fileSize)}</div></div></a>`;}
+  group.appendChild(b);
+}
+
+// ── SEND ─────────────────────────────────────────────────────────────────────
+async function sendMessage() {
+  const input=document.getElementById('msg-input');
+  const text=input.value.trim();
+  if(!text&&pendingFiles.length===0) return;
+  if(!ws||ws.readyState!==WebSocket.OPEN) return;
+  const channel=currentChat==='general'?'general':'dm';
+  const to=currentChat!=='general'?currentChat.user:null;
+  for(const f of pendingFiles) ws.send(JSON.stringify({type:'message',channel,to,msgType:f.msgType,fileUrl:f.url,fileName:f.name,fileSize:f.size,mimeType:f.mime}));
+  if(text) ws.send(JSON.stringify({type:'message',channel,to,msgType:'text',content:text}));
+  input.value=''; input.style.height='';
+  pendingFiles=[]; document.getElementById('preview-bar').innerHTML='';
+}
+
+// ── FILE UPLOAD ───────────────────────────────────────────────────────────────
+function pickFile(t){
+  if(t==='image')document.getElementById('fi-image').click();
+  else if(t==='video')document.getElementById('fi-video').click();
+  else document.getElementById('fi-any').click();
+}
+async function handleFileInput(evt, type) {
+  const file=evt.target.files[0]; if(!file) return;
+  evt.target.value='';
+  if(file.size>50*1024*1024){alert('Max 50MB');return;}
+  const fd=new FormData(); fd.append('file',file);
+  try {
+    const r=await fetch('/api/upload',{method:'POST',body:fd});
+    const data=await r.json();
+    if(data.error){alert(data.error);return;}
+    const msgType=type==='image'?'image':type==='video'?'video':'file';
+    pendingFiles.push({msgType,url:data.url,name:data.originalName,size:data.size,mime:data.mimetype});
+    updatePreview();
+  } catch(e){alert('Upload failed');}
+}
+function updatePreview(){
+  const bar=document.getElementById('preview-bar'); bar.innerHTML='';
+  pendingFiles.forEach((f,i)=>{
+    const el=document.createElement('div'); el.className='preview-item';
+    if(f.msgType==='image') el.innerHTML=`<img class="preview-thumb" src="${f.url}"><span>${esc(f.name)}</span><button class="rm-btn" onclick="removePF(${i})">✕</button>`;
+    else el.innerHTML=`<span>${fIcon(f.name)}</span><span>${esc(f.name)}</span><button class="rm-btn" onclick="removePF(${i})">✕</button>`;
+    bar.appendChild(el);
+  });
+}
+function removePF(i){pendingFiles.splice(i,1);updatePreview();}
+
+// ── WEBRTC CALLING ────────────────────────────────────────────────────────────
+const ICE_SERVERS = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]
+};
+
+async function startCall(callType) {
+  if(callState!=='idle') return;
+  if(!currentChat||currentChat.type!=='dm') return;
+  const peer = currentChat.user;
+  activeCallType = callType;
+  activeCallPeer = peer;
+  activeCallId = Math.random().toString(36).slice(2);
+  callState = 'outgoing';
+
+  // Get local media
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia(
+      callType==='video' ? {video:true, audio:true} : {audio:true}
+    );
+  } catch(e) {
+    showToast('⚠️','Microphone/Camera Error', 'Could not access media devices.');
+    callState='idle'; return;
+  }
+
+  // Show local preview in local video (muted)
+  const lv = document.getElementById('local-video');
+  lv.srcObject = localStream;
+
+  // Show outgoing call UI
+  document.getElementById('outgoing-call').classList.add('visible');
+  document.getElementById('oc-peer-name').textContent = peer;
+  document.getElementById('oc-avatar').textContent = peer[0].toUpperCase();
+
+  // Create peer connection
+  peerConn = new RTCPeerConnection(ICE_SERVERS);
+  localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
+
+  peerConn.onicecandidate = e => {
+    if(e.candidate && ws && ws.readyState===WebSocket.OPEN) {
+      ws.send(JSON.stringify({type:'ice_candidate', to:peer, candidate:e.candidate, callId:activeCallId}));
+    }
+  };
+  peerConn.ontrack = e => {
+    const rv = document.getElementById('remote-video');
+    rv.srcObject = e.streams[0];
+  };
+  peerConn.onconnectionstatechange = () => {
+    if(peerConn.connectionState==='connected') {
+      document.getElementById('call-status').textContent = '00:00';
+      startCallDurationTimer();
+    }
+    if(['disconnected','failed','closed'].includes(peerConn.connectionState)) endCall();
+  };
+
+  const offer = await peerConn.createOffer();
+  await peerConn.setLocalDescription(offer);
+
+  ws.send(JSON.stringify({type:'call_offer', to:peer, offer, callType, callId:activeCallId}));
+
+  // 30-second timeout
+  callTimeoutTimer = setTimeout(() => {
+    if(callState==='outgoing') {
+      ws.send(JSON.stringify({type:'call_timeout', to:peer, callId:activeCallId}));
+      showToast('📵','No Answer', `${peer} didn't pick up.`);
+      cleanupCall();
+    }
+  }, 30000);
+}
+
+async function handleCallOffer(data) {
+  if(callState!=='idle') {
+    // Already in call — auto decline
+    ws.send(JSON.stringify({type:'call_decline', to:data.from, callId:data.callId}));
+    return;
+  }
+  callState = 'incoming';
+  activeCallId = data.callId;
+  activeCallPeer = data.from;
+  activeCallType = data.callType;
+  pendingOffer = data.offer;
+
+  // Show incoming call UI
+  document.getElementById('ic-caller-name').textContent = data.from;
+  document.getElementById('ic-avatar').textContent = data.from[0].toUpperCase();
+  document.getElementById('ic-call-type').textContent = data.callType==='video'?'🎥 Incoming Video Call':'📞 Incoming Audio Call';
+  document.getElementById('incoming-call').classList.add('visible');
+
+  playRingtone();
+
+  // Show system notification
+  if(Notification.permission==='granted') {
+    new Notification(`${data.from} is calling`, {body: `${data.callType==='video'?'Video':'Audio'} call`, icon:'/favicon.ico'});
+  }
+
+  // Auto-timeout: if not answered within 30s
+  callTimeoutTimer = setTimeout(() => {
+    if(callState==='incoming') {
+      declineCall();
+    }
+  }, 30000);
+}
+
+async function acceptCall() {
+  if(callState!=='incoming') return;
+  clearTimeout(callTimeoutTimer);
+  stopRingtone();
+  document.getElementById('incoming-call').classList.remove('visible');
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia(
+      activeCallType==='video' ? {video:true, audio:true} : {audio:true}
+    );
+  } catch(e) {
+    showToast('⚠️','Media Error','Could not access microphone/camera.');
+    cleanupCall(); return;
+  }
+
+  document.getElementById('local-video').srcObject = localStream;
+
+  peerConn = new RTCPeerConnection(ICE_SERVERS);
+  localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
+
+  peerConn.onicecandidate = e => {
+    if(e.candidate && ws && ws.readyState===WebSocket.OPEN) {
+      ws.send(JSON.stringify({type:'ice_candidate', to:activeCallPeer, candidate:e.candidate, callId:activeCallId}));
+    }
+  };
+  peerConn.ontrack = e => {
+    const rv = document.getElementById('remote-video');
+    rv.srcObject = e.streams[0];
+  };
+  peerConn.onconnectionstatechange = () => {
+    if(peerConn.connectionState==='connected') {
+      document.getElementById('call-status').textContent = '00:00';
+      startCallDurationTimer();
+    }
+    if(['disconnected','failed','closed'].includes(peerConn.connectionState)) endCall();
+  };
+
+  await peerConn.setRemoteDescription(pendingOffer);
+  const answer = await peerConn.createAnswer();
+  await peerConn.setLocalDescription(answer);
+
+  ws.send(JSON.stringify({type:'call_answer', to:activeCallPeer, answer, callId:activeCallId}));
+
+  callState = 'active';
+  showActiveCallUI();
+}
+
+async function handleCallAnswer(data) {
+  if(callState!=='outgoing' || data.callId!==activeCallId) return;
+  clearTimeout(callTimeoutTimer);
+  document.getElementById('outgoing-call').classList.remove('visible');
+  callState='active';
+  await peerConn.setRemoteDescription(data.answer);
+  showActiveCallUI();
+}
+
+async function handleIceCandidate(data) {
+  if(!peerConn || data.callId!==activeCallId) return;
+  try { await peerConn.addIceCandidate(data.candidate); } catch(e){}
+}
+
+function handleCallDeclined(data) {
+  if(data.callId!==activeCallId) return;
+  showToast('📵','Call Declined',`${activeCallPeer} declined the call.`);
+  cleanupCall();
+}
+
+function handleCallEnded(data) {
+  if(data.callId!==activeCallId && callState!=='active') return;
+  cleanupCall();
+}
+
+function showActiveCallUI() {
+  const ac = document.getElementById('active-call');
+  ac.classList.add('visible');
+  document.getElementById('call-peer-name').textContent = activeCallPeer;
+  document.getElementById('call-status').textContent = 'Connecting...';
+  // Video vs audio
+  if(activeCallType==='video') {
+    ac.classList.remove('audio-only');
+    document.getElementById('cam-btn').style.display='flex';
+    document.getElementById('audio-only-avatar').style.display='none';
+    document.getElementById('local-video').style.display='block';
+  } else {
+    ac.classList.add('audio-only');
+    document.getElementById('cam-btn').style.display='none';
+    document.getElementById('audio-only-avatar').style.display='flex';
+    document.getElementById('audio-only-avatar').textContent=activeCallPeer[0].toUpperCase();
+    document.getElementById('local-video').style.display='none';
+  }
+  // Reset mute/cam state
+  isMuted=false; isCamOff=false;
+  document.getElementById('mute-btn').textContent='🎤';
+  document.getElementById('mute-btn').classList.remove('muted');
+  document.getElementById('cam-btn').textContent='📷';
+  document.getElementById('cam-btn').classList.remove('cam-off');
+}
+
+function declineCall() {
+  if(callState!=='incoming') return;
+  stopRingtone();
+  clearTimeout(callTimeoutTimer);
+  ws.send(JSON.stringify({type:'call_decline', to:activeCallPeer, callId:activeCallId}));
+  document.getElementById('incoming-call').classList.remove('visible');
+  callState='idle'; activeCallId=null; activeCallPeer=null; pendingOffer=null;
+}
+
+function cancelCall() {
+  if(callState!=='outgoing') return;
+  clearTimeout(callTimeoutTimer);
+  ws.send(JSON.stringify({type:'call_end', to:activeCallPeer, callId:activeCallId}));
+  cleanupCall();
+}
+
+function endCall() {
+  if(callState==='idle') return;
+  if(ws&&ws.readyState===WebSocket.OPEN && activeCallPeer) {
+    ws.send(JSON.stringify({type:'call_end', to:activeCallPeer, callId:activeCallId}));
+  }
+  cleanupCall();
+}
+
+function cleanupCall() {
+  stopRingtone();
+  clearTimeout(callTimeoutTimer);
+  clearInterval(callDurationTimer);
+  callDurationTimer=null;
+  if(peerConn){peerConn.close();peerConn=null;}
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
+  document.getElementById('incoming-call').classList.remove('visible');
+  document.getElementById('outgoing-call').classList.remove('visible');
+  document.getElementById('active-call').classList.remove('visible');
+  document.getElementById('remote-video').srcObject=null;
+  document.getElementById('local-video').srcObject=null;
+  callState='idle'; activeCallId=null; activeCallPeer=null; pendingOffer=null;
+}
+
+function toggleMute() {
+  if(!localStream) return;
+  isMuted=!isMuted;
+  localStream.getAudioTracks().forEach(t=>t.enabled=!isMuted);
+  const btn=document.getElementById('mute-btn');
+  btn.textContent=isMuted?'🔇':'🎤';
+  btn.classList.toggle('muted',isMuted);
+}
+function toggleCam() {
+  if(!localStream) return;
+  isCamOff=!isCamOff;
+  localStream.getVideoTracks().forEach(t=>t.enabled=!isCamOff);
+  const btn=document.getElementById('cam-btn');
+  btn.textContent=isCamOff?'🚫':'📷';
+  btn.classList.toggle('cam-off',isCamOff);
+}
+
+let callSeconds = 0;
+function startCallDurationTimer() {
+  callSeconds=0;
+  clearInterval(callDurationTimer);
+  callDurationTimer = setInterval(()=>{
+    callSeconds++;
+    const m=String(Math.floor(callSeconds/60)).padStart(2,'0');
+    const s=String(callSeconds%60).padStart(2,'0');
+    const el=document.getElementById('call-status');
+    if(el) el.textContent=`${m}:${s}`;
+  },1000);
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+function requestNotifPermission() {
+  if('Notification' in window && Notification.permission==='default') {
+    Notification.requestPermission();
+  }
+}
+
+function showMsgNotification(msg, from) {
+  // In-app toast
+  if(document.hidden || currentChat!==from) {
+    const text = msg.type==='text' ? msg.content : `[${msg.type}]`;
+    showToast('💬', from, text, ()=>{ if(from!=='General') openDM(from); });
+  }
+  // OS notification when page hidden
+  if(document.hidden && Notification.permission==='granted') {
+    new Notification(`New message from ${from}`, {
+      body: msg.type==='text' ? msg.content.slice(0,80) : `Sent a ${msg.type}`,
+    });
+  }
+}
+
+function showToast(icon, title, message, onClick) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML=`<div class="toast-icon">${icon}</div><div class="toast-body"><div class="toast-title">${esc(title)}</div><div class="toast-msg">${esc(message)}</div></div><div class="toast-close">✕</div>`;
+  toast.querySelector('.toast-close').onclick=(e)=>{e.stopPropagation();toast.remove();};
+  if(onClick) toast.onclick=onClick;
+  container.appendChild(toast);
+  setTimeout(()=>toast.remove(), 5000);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+async function api(url, method, body) {
+  const opts = {method, headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(url,opts);
+  return r.json();
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtSz(b){if(!b)return'';if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
+function fIcon(n){const e=(n||'').split('.').pop().toLowerCase();if(['pdf'].includes(e))return'📄';if(['doc','docx'].includes(e))return'📝';if(['xls','xlsx','csv'].includes(e))return'📊';if(['zip','rar','7z'].includes(e))return'🗜️';if(['mp3','wav','ogg'].includes(e))return'🎵';if(['jpg','jpeg','png','gif','webp'].includes(e))return'🖼️';return'📎';}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function openLightbox(src){document.getElementById('lb-img').src=src;document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+function updateGeneralBadge(){const b=document.getElementById('badge-general');const c=unread.general||0;b.textContent=c;b.style.display=c>0?'flex':'none';}
+function setActive(id){document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));document.getElementById(id)?.classList.add('active');}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();if(callState==='active')endCall();}});
+
+// Service Worker for push notifications
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+initApp();
+</script>
+</body>
+</html>
