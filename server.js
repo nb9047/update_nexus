@@ -52,7 +52,7 @@ function saveMessages(key, msgs) {
 }
 function dmKey(a, b) { return [a, b].sort().join('__'); }
 
-// ─── FILE UPLOAD ──────────────────────────────────────────────────────────────
+// ─── FILE UPLOAD (chat attachments) ──────────────────────────────────────────
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
@@ -62,6 +62,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
+// ─── AVATAR UPLOAD ────────────────────────────────────────────────────────────
 const avatarUpload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => cb(null, UPLOADS_DIR),
@@ -96,7 +97,7 @@ function authMiddleware(req, res, next) {
 }
 
 // ─── ONLINE TRACKING ──────────────────────────────────────────────────────────
-const onlineUsers = new Map();
+const onlineUsers = new Map(); // username -> Set of ws clients
 
 // ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
 app.post('/api/register', async (req, res) => {
@@ -108,18 +109,13 @@ app.post('/api/register', async (req, res) => {
   const users = readJSON(USERS_FILE);
   if (users[username]) return res.status(400).json({ error: 'Username already taken' });
   const hash = await bcrypt.hash(password, 10);
-  users[username] = {
-    password: hash,
-    created: Date.now(),
-    isAdmin: username === ADMIN_USERNAME,
-    avatar: null
-  };
+  users[username] = { password: hash, created: Date.now(), isAdmin: username === ADMIN_USERNAME, avatar: null };
   writeJSON(USERS_FILE, users);
   const token = uuidv4();
   const sessions = readJSON(SESSIONS_FILE);
   sessions[token] = username;
   writeJSON(SESSIONS_FILE, sessions);
-  // 1-year cookie for permanent persistence
+  // FIX: 1-year maxAge ensures accounts persist across browser restarts
   res.cookie('session', token, { httpOnly: true, maxAge: 365 * 24 * 60 * 60 * 1000 });
   res.json({ ok: true, username, isAdmin: username === ADMIN_USERNAME, avatar: null });
 });
@@ -136,7 +132,7 @@ app.post('/api/login', async (req, res) => {
   const sessions = readJSON(SESSIONS_FILE);
   sessions[token] = username;
   writeJSON(SESSIONS_FILE, sessions);
-  // 1-year cookie for permanent persistence
+  // FIX: 1-year maxAge ensures sessions survive browser restarts
   res.cookie('session', token, { httpOnly: true, maxAge: 365 * 24 * 60 * 60 * 1000 });
   res.json({ ok: true, username, isAdmin: username === ADMIN_USERNAME, avatar: user.avatar || null });
 });
@@ -155,11 +151,7 @@ app.post('/api/logout', authMiddleware, (req, res) => {
 app.get('/api/me', authMiddleware, (req, res) => {
   const users = readJSON(USERS_FILE);
   const user = users[req.username] || {};
-  res.json({
-    username: req.username,
-    isAdmin: req.isAdmin,
-    avatar: user.avatar || null
-  });
+  res.json({ username: req.username, isAdmin: req.isAdmin, avatar: user.avatar || null });
 });
 
 // ─── USERS ROUTE ──────────────────────────────────────────────────────────────
@@ -176,28 +168,25 @@ app.get('/api/users', authMiddleware, (req, res) => {
 
 // ─── PROFILE ROUTES ───────────────────────────────────────────────────────────
 
-// Upload/update avatar
+// Upload / update avatar
 app.post('/api/profile/avatar', authMiddleware, avatarUpload.single('avatar'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file provided' });
   const users = readJSON(USERS_FILE);
   if (!users[req.username]) return res.status(404).json({ error: 'User not found' });
 
-  // Delete old avatar file if it exists
+  // Remove previous avatar file
   const oldAvatar = users[req.username].avatar;
   if (oldAvatar) {
     const oldPath = path.join(UPLOADS_DIR, path.basename(oldAvatar));
-    if (fs.existsSync(oldPath)) {
-      try { fs.unlinkSync(oldPath); } catch {}
-    }
+    if (fs.existsSync(oldPath)) { try { fs.unlinkSync(oldPath); } catch {} }
   }
 
   const avatarUrl = '/uploads/' + req.file.filename;
   users[req.username].avatar = avatarUrl;
   writeJSON(USERS_FILE, users);
 
-  // Notify all clients so avatars refresh globally
+  // Broadcast so every connected client refreshes this user's avatar in real-time
   broadcast({ type: 'profile_update', username: req.username, avatar: avatarUrl });
-
   res.json({ ok: true, avatar: avatarUrl });
 });
 
@@ -208,31 +197,29 @@ app.post('/api/profile/username', authMiddleware, async (req, res) => {
   if (newUsername.length < 3) return res.status(400).json({ error: 'Username must be 3+ chars' });
   if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) return res.status(400).json({ error: 'Letters, numbers, _ only' });
   if (newUsername === req.username) return res.json({ ok: true, username: req.username });
-
   if (req.username === ADMIN_USERNAME) return res.status(403).json({ error: 'Admin username cannot be changed' });
 
   const users = readJSON(USERS_FILE);
   if (users[newUsername]) return res.status(400).json({ error: 'Username already taken' });
 
-  // Move user record
+  // Move user record to new key
   users[newUsername] = { ...users[req.username] };
   delete users[req.username];
   writeJSON(USERS_FILE, users);
 
-  // Update all sessions pointing to old username
+  // Remap all session tokens
   const sessions = readJSON(SESSIONS_FILE);
   for (const token of Object.keys(sessions)) {
     if (sessions[token] === req.username) sessions[token] = newUsername;
   }
   writeJSON(SESSIONS_FILE, sessions);
 
-  // Broadcast so other clients update their user lists
+  // Notify all clients so user lists refresh
   broadcast({ type: 'username_changed', oldUsername: req.username, newUsername });
-
   res.json({ ok: true, username: newUsername });
 });
 
-// Change password
+// Change password (current password required)
 app.post('/api/profile/password', authMiddleware, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Missing fields' });
@@ -250,7 +237,7 @@ app.post('/api/profile/password', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Public profile lookup
+// Public profile lookup (for viewing other users)
 app.get('/api/profile/:username', authMiddleware, (req, res) => {
   const users = readJSON(USERS_FILE);
   const user = users[req.params.username];
@@ -264,6 +251,7 @@ app.get('/api/profile/:username', authMiddleware, (req, res) => {
 });
 
 // ─── METERED.CA ICE SERVERS ───────────────────────────────────────────────────
+// Frontend fetches this before every call to get fresh TURN credentials
 app.get('/api/ice-servers', authMiddleware, async (req, res) => {
   try {
     const response = await fetch(
@@ -274,6 +262,7 @@ app.get('/api/ice-servers', authMiddleware, async (req, res) => {
     res.json({ iceServers });
   } catch (err) {
     console.warn('[Metered] ICE fetch failed, using fallback STUN:', err.message);
+    // Fallback keeps calls working even if Metered is temporarily unreachable
     res.json({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -296,6 +285,7 @@ app.get('/api/messages/dm/:user', authMiddleware, (req, res) => {
   res.json(getMessages(k));
 });
 
+// Admin: view any DM
 app.get('/api/admin/dm', authMiddleware, (req, res) => {
   if (!req.isAdmin) return res.status(403).json({ error: 'Forbidden' });
   const { a, b } = req.query;
@@ -303,6 +293,7 @@ app.get('/api/admin/dm', authMiddleware, (req, res) => {
   res.json(getMessages(dmKey(a, b)));
 });
 
+// Admin: list all conversations
 app.get('/api/admin/conversations', authMiddleware, (req, res) => {
   if (!req.isAdmin) return res.status(403).json({ error: 'Forbidden' });
   const files = fs.readdirSync(MESSAGES_DIR).filter(f => f.endsWith('.json'));
@@ -334,6 +325,7 @@ app.post('/api/push/subscribe', authMiddleware, (req, res) => {
   if (!subscription) return res.status(400).json({ error: 'Missing subscription' });
   const subs = readJSON(PUSH_SUBS_FILE);
   if (!subs[req.username]) subs[req.username] = [];
+  // Avoid duplicates
   const endpoint = subscription.endpoint;
   subs[req.username] = subs[req.username].filter(s => s.endpoint !== endpoint);
   subs[req.username].push(subscription);
@@ -363,6 +355,7 @@ wss.on('connection', (ws, req) => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
 
+    // ── CHAT MESSAGES ────────────────────────────────────────────────────────
     if (data.type === 'message') {
       const msg = {
         id: uuidv4(),
@@ -389,6 +382,7 @@ wss.on('connection', (ws, req) => {
       }
     }
 
+    // ── WEBRTC SIGNALING ─────────────────────────────────────────────────────
     if (data.type === 'call_offer') {
       const { to, offer, callType, callId } = data;
       sendToUser(to, { type: 'call_offer', from: username, offer, callType, callId });

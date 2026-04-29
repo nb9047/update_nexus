@@ -62,10 +62,17 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 .brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
 .brand-name{font-size:18px;font-weight:800;}
 .brand-name span{color:var(--accent);}
-.logout-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;}
-.logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+
+/* ── AVATAR BUTTON (replaces logout text) ────────────────────────────────── */
+.header-avatar-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:linear-gradient(135deg,var(--accent),var(--accent2));
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;
+  overflow:hidden;transition:border-color .2s,box-shadow .2s;flex-shrink:0;padding:0;}
+.header-avatar-btn:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,247,.25);}
+.header-avatar-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+
 .me-info{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface2);}
-.me-info .avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;}
+.me-info .avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;}
+.me-info .avatar img{width:100%;height:100%;object-fit:cover;border-radius:10px;}
 .me-info .uname{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;}
 .me-info .ustatus{font-size:11px;color:var(--online);font-family:'DM Mono',monospace;}
 .admin-crown{font-size:13px;}
@@ -75,7 +82,8 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 .sidebar-item.active{background:var(--surface3);}
 .sidebar-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--accent);border-radius:0 2px 2px 0;}
 .sidebar-item.admin-item.active::before{background:var(--admin);}
-.s-icon{width:36px;height:36px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.s-icon{width:36px;height:36px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;overflow:hidden;}
+.s-icon img{width:100%;height:100%;object-fit:cover;border-radius:10px;}
 .sidebar-item.active .s-icon{background:rgba(124,106,247,.2);}
 .s-info{flex:1;min-width:0;}
 .s-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -98,8 +106,9 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 /* ── CHAT MAIN ────────────────────────────────────────────────────────────── */
 .chat-main{flex:1;display:flex;flex-direction:column;height:100%;background:var(--bg);overflow:hidden;min-width:0;}
 .chat-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface);flex-shrink:0;}
-.ch-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ch-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden;}
 .ch-icon.user{background:var(--surface2);font-size:20px;font-weight:700;color:var(--accent);}
+.ch-icon img{width:100%;height:100%;object-fit:cover;border-radius:12px;}
 .ch-info{flex:1;min-width:0;}
 .ch-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ch-sub{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px;display:flex;align-items:center;gap:5px;}
@@ -135,7 +144,6 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 .date-div{display:flex;align-items:center;gap:12px;margin:12px 0;color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;}
 .date-div::before,.date-div::after{content:'';flex:1;height:1px;background:var(--border);}
 .sys-msg{text-align:center;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin:8px 0;}
-/* Call log in messages */
 .call-log-bubble{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;}
 .call-log-bubble .cl-icon{font-size:16px;}
 
@@ -182,6 +190,57 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 .admin-msgs-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .admin-empty{color:var(--text3);font-family:'DM Mono',monospace;font-size:13px;text-align:center;padding:40px;}
 
+/* ── PROFILE PAGE ─────────────────────────────────────────────────────────── */
+#profile-panel{flex:1;display:none;flex-direction:column;height:100%;overflow-y:auto;background:var(--bg);}
+.profile-header{padding:18px 24px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.profile-back-btn{width:36px;height:36px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.profile-back-btn:hover{border-color:var(--accent);color:var(--accent);}
+.profile-header-title{font-size:18px;font-weight:800;}
+.profile-body{padding:32px 24px;max-width:560px;margin:0 auto;width:100%;}
+
+/* Hero avatar section */
+.profile-hero{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:36px;}
+.profile-avatar-wrap{position:relative;width:110px;height:110px;}
+.profile-avatar-img{width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:#fff;
+  border:3px solid var(--border);overflow:hidden;transition:border-color .2s;}
+.profile-avatar-img img{width:100%;height:100%;object-fit:cover;}
+.profile-avatar-edit{position:absolute;bottom:2px;right:2px;width:30px;height:30px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;transition:background .2s;color:#fff;}
+.profile-avatar-edit:hover{background:#9b8bf7;}
+.profile-hero-name{font-size:22px;font-weight:800;text-align:center;}
+.profile-hero-sub{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;}
+
+/* Cards */
+.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;position:relative;}
+.profile-card::before{content:'';position:absolute;top:0;left:24px;width:40px;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);}
+.profile-card-title{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.profile-card-title span{font-size:14px;}
+.profile-field-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.profile-field-row:last-child{margin-bottom:0;}
+.profile-field-row label{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;width:90px;flex-shrink:0;text-transform:uppercase;letter-spacing:.4px;}
+.profile-field-row input{flex:1;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.profile-field-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,247,.12);}
+.profile-field-row input[readonly]{color:var(--text2);cursor:default;}
+.profile-field-row input[type="password"]{letter-spacing:2px;}
+.profile-save-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--accent),#9b8bf7);border:none;border-radius:10px;
+  color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px;transition:all .2s;}
+.profile-save-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,247,.4);}
+.profile-save-btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none;}
+.profile-msg{font-size:12px;font-family:'DM Mono',monospace;margin-top:10px;text-align:center;min-height:16px;}
+.profile-msg.ok{color:var(--accent3);}
+.profile-msg.err{color:var(--danger);}
+.profile-danger-zone{background:rgba(247,106,106,.06);border-color:rgba(247,106,106,.25);}
+.profile-danger-zone .profile-card-title{color:var(--danger);}
+.profile-danger-zone .profile-card-title::before{background:linear-gradient(90deg,var(--danger),transparent);}
+.logout-full-btn{width:100%;padding:11px;background:transparent;border:1px solid var(--danger);border-radius:10px;
+  color:var(--danger);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;transition:all .2s;}
+.logout-full-btn:hover{background:rgba(247,106,106,.1);}
+
 /* ── LIGHTBOX ─────────────────────────────────────────────────────────────── */
 .lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;}
 .lightbox.open{display:flex;}
@@ -195,9 +254,10 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 .ic-card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:40px 48px;text-align:center;
   box-shadow:0 0 80px rgba(124,106,247,.2),0 24px 48px rgba(0,0,0,.6);animation:slideUp .3s ease;position:relative;overflow:hidden;min-width:320px;}
 .ic-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
-.ic-pulse{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:#fff;margin:0 auto 24px;position:relative;}
+.ic-pulse{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:#fff;margin:0 auto 24px;position:relative;overflow:hidden;}
 .ic-pulse::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(124,106,247,.4);animation:pulse-ring 1.5s ease-out infinite;}
 .ic-pulse::after{content:'';position:absolute;inset:-20px;border-radius:50%;border:1px solid rgba(124,106,247,.2);animation:pulse-ring 1.5s ease-out infinite .4s;}
+.ic-pulse img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 @keyframes pulse-ring{0%{transform:scale(.95);opacity:.8;}100%{transform:scale(1.15);opacity:0;}}
 .ic-name{font-size:24px;font-weight:800;margin-bottom:6px;}
 .ic-type{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:32px;}
@@ -225,10 +285,10 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 .ctrl-btn.end-call{background:var(--call-red);box-shadow:0 4px 20px rgba(239,68,68,.5);}
 .ctrl-btn.end-call:hover{background:#dc2626;box-shadow:0 8px 28px rgba(239,68,68,.6);}
 .ctrl-btn.muted,.ctrl-btn.cam-off{background:rgba(239,68,68,.25);color:var(--call-red);}
-/* Audio-only call background */
 #active-call.audio-only #remote-video{display:none;}
 #active-call.audio-only{background:radial-gradient(ellipse at center,#1a0f3a 0%,var(--bg) 80%);}
-.audio-only-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:800;color:#fff;margin-bottom:16px;}
+.audio-only-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:800;color:#fff;margin-bottom:16px;overflow:hidden;}
+.audio-only-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 
 /* ── OUTGOING CALL ────────────────────────────────────────────────────────── */
 #outgoing-call{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;
@@ -236,7 +296,8 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 #outgoing-call.visible{display:flex;}
 .oc-card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:40px 48px;text-align:center;
   box-shadow:0 24px 48px rgba(0,0,0,.6);animation:slideUp .3s ease;min-width:300px;}
-.oc-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;margin:0 auto 16px;}
+.oc-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;margin:0 auto 16px;overflow:hidden;}
+.oc-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .oc-name{font-size:20px;font-weight:700;margin-bottom:6px;}
 .oc-status{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:28px;}
 .oc-dots{display:inline-flex;gap:4px;vertical-align:middle;}
@@ -267,40 +328,33 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 /* ── MOBILE RESPONSIVE ────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   :root { --sidebar-w: 100%; }
-
-  .sidebar{
-    position:fixed;top:0;left:0;bottom:0;width:280px;transform:translateX(-100%);z-index:100;
-  }
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:280px;transform:translateX(-100%);z-index:100;}
   .sidebar.open{transform:translateX(0);}
   #sidebar-overlay.visible{display:block;}
   .hamburger{display:flex;}
-
   .chat-header{padding:10px 14px;}
   .ch-name{font-size:14px;}
   .call-btn{width:34px;height:34px;font-size:15px;}
-
   .messages-area{padding:14px 12px;}
   .msg-bubble{max-width:85%;}
   .msg-image img,.msg-video video{max-width:220px;}
-
   .input-wrap{padding:10px 10px 12px;}
   .action-btn{width:36px;height:36px;font-size:15px;}
   .send-btn{width:40px;height:40px;}
-
   #local-video{width:88px;height:66px;bottom:80px;right:12px;}
   .call-controls{gap:14px;}
   .ctrl-btn{width:48px;height:48px;font-size:18px;}
   .ctrl-btn.end-call{width:58px;height:58px;}
-
   .ic-card,.oc-card{padding:32px 28px;min-width:280px;}
-
   .admin-body{flex-direction:column;}
   .admin-convos{width:100%;}
-
   .auth-box{width:92%;padding:32px 24px;}
-
   #toast-container{top:auto;bottom:80px;right:12px;left:12px;}
   .toast{min-width:unset;max-width:100%;}
+  .profile-body{padding:20px 16px;}
+  .profile-field-row{flex-direction:column;align-items:flex-start;gap:6px;}
+  .profile-field-row label{width:auto;}
+  .profile-field-row input{width:100%;}
 }
 
 @media (max-width: 400px) {
@@ -349,11 +403,12 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
         <div class="brand-icon">⚡</div>
         <div class="brand-name">Nex<span>us</span></div>
       </div>
-      <button class="logout-btn" onclick="doLogout()">Logout</button>
+      <!-- FEATURE 1: Avatar button replaces logout text -->
+      <button class="header-avatar-btn" id="header-avatar-btn" onclick="openProfile()" title="My Profile"></button>
     </div>
 
     <div class="me-info">
-      <div class="avatar" id="me-avatar">?</div>
+      <div class="avatar" id="me-avatar"></div>
       <div>
         <div class="uname" id="me-uname">...</div>
         <div class="ustatus">● Online</div>
@@ -443,8 +498,71 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
         </div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- FEATURE 1: Profile Panel -->
+    <div id="profile-panel">
+      <div class="profile-header">
+        <button class="profile-back-btn" onclick="closeProfile()" title="Back">←</button>
+        <div class="profile-header-title">My Profile</div>
+      </div>
+      <div class="profile-body">
+
+        <!-- Hero: avatar + name -->
+        <div class="profile-hero">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar-img" id="profile-big-avatar"></div>
+            <button class="profile-avatar-edit" onclick="document.getElementById('fi-avatar').click()" title="Change Avatar">✏️</button>
+          </div>
+          <div class="profile-hero-name" id="profile-hero-name">—</div>
+          <div class="profile-hero-sub" id="profile-hero-sub">// nexus member</div>
+        </div>
+
+        <!-- Change Username card -->
+        <div class="profile-card">
+          <div class="profile-card-title"><span>✦</span> Username</div>
+          <div class="profile-field-row">
+            <label>Current</label>
+            <input type="text" id="profile-current-username" readonly>
+          </div>
+          <div class="profile-field-row">
+            <label>New</label>
+            <input type="text" id="profile-new-username" placeholder="new_username" autocomplete="off">
+          </div>
+          <button class="profile-save-btn" onclick="saveUsername()">Update Username</button>
+          <div class="profile-msg" id="profile-username-msg"></div>
+        </div>
+
+        <!-- Change Password card -->
+        <div class="profile-card">
+          <div class="profile-card-title"><span>🔒</span> Password</div>
+          <div class="profile-field-row">
+            <label>Current</label>
+            <input type="password" id="profile-cur-pass" placeholder="current password">
+          </div>
+          <div class="profile-field-row">
+            <label>New</label>
+            <input type="password" id="profile-new-pass" placeholder="new password (4+ chars)">
+          </div>
+          <div class="profile-field-row">
+            <label>Confirm</label>
+            <input type="password" id="profile-conf-pass" placeholder="confirm new password">
+          </div>
+          <button class="profile-save-btn" onclick="savePassword()">Update Password</button>
+          <div class="profile-msg" id="profile-password-msg"></div>
+        </div>
+
+        <!-- Danger zone: logout -->
+        <div class="profile-card profile-danger-zone">
+          <div class="profile-card-title"><span>⚠️</span> Session</div>
+          <button class="logout-full-btn" onclick="doLogout()">Sign Out of Nexus</button>
+        </div>
+
+      </div>
+    </div>
+    <!-- end Profile Panel -->
+
+  </div><!-- end chat-main -->
+</div><!-- end app-screen -->
 
 <!-- ── LIGHTBOX ─────────────────────────────────────────────────────────────── -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -455,7 +573,7 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 <!-- ── INCOMING CALL ─────────────────────────────────────────────────────────── -->
 <div id="incoming-call">
   <div class="ic-card">
-    <div class="ic-pulse" id="ic-avatar">?</div>
+    <div class="ic-pulse" id="ic-avatar"></div>
     <div class="ic-name" id="ic-caller-name">Someone</div>
     <div class="ic-type" id="ic-call-type">📞 Incoming Audio Call</div>
     <div class="ic-buttons">
@@ -474,7 +592,7 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 <!-- ── OUTGOING CALL ──────────────────────────────────────────────────────────── -->
 <div id="outgoing-call">
   <div class="oc-card">
-    <div class="oc-avatar" id="oc-avatar">?</div>
+    <div class="oc-avatar" id="oc-avatar"></div>
     <div class="oc-name" id="oc-peer-name">...</div>
     <div class="oc-status">Calling <span class="oc-dots"><span></span><span></span><span></span></span></div>
     <button class="oc-cancel" onclick="cancelCall()" title="Cancel">📵</button>
@@ -485,7 +603,7 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 <div id="active-call">
   <video id="remote-video" autoplay playsinline></video>
   <video id="local-video" autoplay playsinline muted></video>
-  <div class="audio-only-avatar" id="audio-only-avatar" style="display:none">?</div>
+  <div class="audio-only-avatar" id="audio-only-avatar" style="display:none"></div>
   <div class="call-ui">
     <div class="call-info">
       <div class="call-peer-name" id="call-peer-name">...</div>
@@ -506,15 +624,17 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
 <input type="file" id="fi-image" accept="image/*" style="display:none" onchange="handleFileInput(event,'image')">
 <input type="file" id="fi-video" accept="video/*" style="display:none" onchange="handleFileInput(event,'video')">
 <input type="file" id="fi-any" style="display:none" onchange="handleFileInput(event,'file')">
+<input type="file" id="fi-avatar" accept="image/*" style="display:none" onchange="handleAvatarInput(event)">
 
 <script>
 // ── STATE ────────────────────────────────────────────────────────────────────
-let ME = null;
+let ME = null;         // { username, isAdmin, avatar }
 let currentChat = null;
 let ws = null;
 let onlineUsers = [];
 let unread = {};
 let pendingFiles = [];
+let userAvatarCache = {}; // username -> avatarUrl|null
 
 // ── WEBRTC STATE ─────────────────────────────────────────────────────────────
 let peerConn = null;
@@ -522,14 +642,14 @@ let localStream = null;
 let callState = 'idle'; // idle | outgoing | incoming | active
 let activeCallId = null;
 let activeCallPeer = null;
-let activeCallType = 'audio'; // audio | video
-let pendingOffer = null;       // stored while in incoming state
+let activeCallType = 'audio';
+let pendingOffer = null;
 let callTimeoutTimer = null;
 let callDurationTimer = null;
 let isMuted = false;
 let isCamOff = false;
 
-// Ringtone using Web Audio API (tit-tit-tit)
+// ── RINGTONE ──────────────────────────────────────────────────────────────────
 let ringtoneInterval = null;
 function playRingtone() {
   stopRingtone();
@@ -550,6 +670,28 @@ function stopRingtone() {
   if (ringtoneInterval) { clearInterval(ringtoneInterval); ringtoneInterval = null; }
 }
 
+// ── AVATAR HELPERS ────────────────────────────────────────────────────────────
+// Renders an avatar into any element: img if url, initial letter otherwise
+function setAvatarEl(el, username, avatarUrl) {
+  if (!el) return;
+  if (avatarUrl) {
+    el.innerHTML = `<img src="${avatarUrl}" alt="${esc(username)}">`;
+  } else {
+    el.innerHTML = username ? username[0].toUpperCase() : '?';
+  }
+}
+
+// Header circular avatar button
+function refreshHeaderAvatar() {
+  const btn = document.getElementById('header-avatar-btn');
+  if (!btn || !ME) return;
+  if (ME.avatar) {
+    btn.innerHTML = `<img src="${ME.avatar}" alt="${esc(ME.username)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  } else {
+    btn.textContent = ME.username ? ME.username[0].toUpperCase() : '?';
+  }
+}
+
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 function switchTab(t) {
   document.querySelectorAll('.auth-tab').forEach((el,i) => el.classList.toggle('active', i===(t==='login'?0:1)));
@@ -558,6 +700,7 @@ function switchTab(t) {
   document.getElementById('auth-error').style.display = 'none';
 }
 function showErr(msg) { const e=document.getElementById('auth-error'); e.textContent=msg; e.style.display='block'; }
+
 async function doRegister() {
   const u=document.getElementById('reg-user').value.trim();
   const p=document.getElementById('reg-pass').value;
@@ -570,6 +713,7 @@ async function doRegister() {
     startApp(r);
   } finally { btn.innerHTML='Create Account →'; btn.disabled=false; }
 }
+
 async function doLogin() {
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value;
@@ -582,9 +726,10 @@ async function doLogin() {
     startApp(r);
   } finally { btn.innerHTML='Sign In →'; btn.disabled=false; }
 }
+
 async function doLogout() {
   await api('/api/logout','POST',{});
-  ws&&ws.close(); ME=null; currentChat=null; pendingFiles=[];
+  ws&&ws.close(); ME=null; currentChat=null; pendingFiles=[]; userAvatarCache={};
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-user').value='';
@@ -596,14 +741,19 @@ async function startApp(user) {
   ME = user;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app-screen').style.display='flex';
-  document.getElementById('me-uname').innerHTML = ME.username+(ME.isAdmin?'&nbsp;<span class="admin-crown">👑</span>':'');
-  document.getElementById('me-avatar').textContent = ME.username[0].toUpperCase();
+
+  // Populate sidebar me-info
+  document.getElementById('me-uname').innerHTML = esc(ME.username)+(ME.isAdmin?'&nbsp;<span class="admin-crown">👑</span>':'');
+  setAvatarEl(document.getElementById('me-avatar'), ME.username, ME.avatar);
+  refreshHeaderAvatar();
+
   if(ME.isAdmin) document.getElementById('admin-sidebar-btn').style.display='flex';
   await loadUsers();
   openGeneral();
   connectWS();
   requestNotifPermission();
 }
+
 async function initApp() {
   try { const r=await api('/api/me','GET'); if(r.username) startApp(r); } catch{}
 }
@@ -616,6 +766,8 @@ function connectWS() {
     const data = JSON.parse(e.data);
     if(data.type==='online_update'){onlineUsers=data.users;renderUsers();}
     else if(data.type==='message') handleIncomingMsg(data);
+    else if(data.type==='profile_update') handleProfileUpdate(data);
+    else if(data.type==='username_changed') handleUsernameChanged(data);
     // WebRTC signaling
     else if(data.type==='call_offer') handleCallOffer(data);
     else if(data.type==='call_answer') handleCallAnswer(data);
@@ -625,6 +777,30 @@ function connectWS() {
     else if(data.type==='call_timeout') handleCallEnded(data);
   };
   ws.onclose = () => setTimeout(connectWS, 3000);
+}
+
+// Real-time profile update broadcast handler
+function handleProfileUpdate(data) {
+  userAvatarCache[data.username] = data.avatar;
+  // If it's me, refresh my own UI elements
+  if(data.username === ME?.username) {
+    ME.avatar = data.avatar;
+    setAvatarEl(document.getElementById('me-avatar'), ME.username, ME.avatar);
+    refreshHeaderAvatar();
+  }
+  // Refresh user list to show updated avatar
+  renderUsers();
+}
+
+// Real-time username change handler
+function handleUsernameChanged(data) {
+  if(data.oldUsername === ME?.username) {
+    ME.username = data.newUsername;
+    document.getElementById('me-uname').innerHTML = esc(ME.username)+(ME.isAdmin?'&nbsp;<span class="admin-crown">👑</span>':'');
+    refreshHeaderAvatar();
+  }
+  // Refresh user list
+  renderUsers();
 }
 
 function handleIncomingMsg(data) {
@@ -646,9 +822,13 @@ function handleIncomingMsg(data) {
 // ── USERS ────────────────────────────────────────────────────────────────────
 async function loadUsers() {
   const users = await api('/api/users','GET');
+  if(Array.isArray(users)) {
+    users.forEach(u => { userAvatarCache[u.username] = u.avatar || null; });
+  }
   renderUsersList(users);
 }
 function renderUsers(){loadUsers();}
+
 function renderUsersList(users) {
   if(!users) return;
   const list = document.getElementById('users-list');
@@ -664,8 +844,14 @@ function renderUsersList(users) {
     div.className = 'sidebar-item'+(isActive?' active':'');
     div.id = 'item-dm-'+u.username;
     div.onclick = () => { openDM(u.username); closeSidebar(); };
-    div.innerHTML = `
-      <div class="s-icon">${u.username[0].toUpperCase()}</div>
+
+    // Build avatar icon
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 's-icon';
+    setAvatarEl(iconDiv, u.username, u.avatar);
+
+    div.appendChild(iconDiv);
+    div.innerHTML += `
       <div class="s-info">
         <div class="s-name">${esc(u.username)}${u.isAdmin?'&nbsp;👑':''}</div>
         <div class="s-sub">${u.online?'Online':'Offline'}</div>
@@ -692,12 +878,12 @@ async function openGeneral() {
   unread.general = 0; updateGeneralBadge();
   setActive('item-general');
   showChatView();
-  document.getElementById('ch-icon').textContent='#';
+  document.getElementById('ch-icon').innerHTML='#';
   document.getElementById('ch-icon').className='ch-icon';
   document.getElementById('ch-name').textContent='General';
   document.getElementById('ch-sub').innerHTML='<span class="dot on"></span>Public channel · everyone';
   document.getElementById('admin-badge').style.display='none';
-  document.getElementById('call-actions').style.display='none'; // no calling in General
+  document.getElementById('call-actions').style.display='none';
   const msgs = await api('/api/messages/general','GET');
   renderMessages(msgs);
 }
@@ -707,18 +893,30 @@ async function openDM(user) {
   unread[user] = 0;
   setActive('item-dm-'+user);
   showChatView();
-  document.getElementById('ch-icon').textContent = user[0].toUpperCase();
-  document.getElementById('ch-icon').className='ch-icon user';
+
+  // Set chat header icon with avatar
+  const chIcon = document.getElementById('ch-icon');
+  chIcon.className='ch-icon user';
+  const peerAvatar = userAvatarCache[user];
+  if(peerAvatar) {
+    chIcon.innerHTML=`<img src="${peerAvatar}" alt="${esc(user)}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`;
+  } else {
+    chIcon.textContent = user[0].toUpperCase();
+  }
+
   document.getElementById('ch-name').textContent = user;
   const users = await api('/api/users','GET');
   const u = users.find(x=>x.username===user);
   const isOnline = u&&u.online;
   document.getElementById('ch-sub').innerHTML=`<span class="dot ${isOnline?'on':'off'}"></span>${isOnline?'Online':'Offline'}`;
   document.getElementById('admin-badge').style.display='none';
-  document.getElementById('call-actions').style.display='flex'; // enable call buttons for DMs
-  // Update call-peer context
+  document.getElementById('call-actions').style.display='flex';
+
+  // Set outgoing call peer UI
+  const oa = document.getElementById('oc-avatar');
+  setAvatarEl(oa, user, peerAvatar);
   document.getElementById('oc-peer-name').textContent = user;
-  document.getElementById('oc-avatar').textContent = user[0].toUpperCase();
+
   const msgs = await api(`/api/messages/dm/${encodeURIComponent(user)}`,'GET');
   renderMessages(msgs);
   renderUsers();
@@ -731,10 +929,126 @@ function openAdmin() {
   document.getElementById('no-chat').style.display='none';
   document.getElementById('chat-view').style.display='none';
   document.getElementById('admin-panel').style.display='flex';
+  document.getElementById('profile-panel').style.display='none';
   document.getElementById('call-actions').style.display='none';
   loadAdminConvos();
 }
 
+// ── PROFILE PAGE ──────────────────────────────────────────────────────────────
+function openProfile() {
+  closeSidebar();
+  document.getElementById('no-chat').style.display='none';
+  document.getElementById('chat-view').style.display='none';
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('profile-panel').style.display='flex';
+  document.getElementById('profile-panel').style.flexDirection='column';
+  document.getElementById('call-actions').style.display='none';
+  document.getElementById('admin-badge').style.display='none';
+  document.querySelector('.chat-header .ch-name') && (document.getElementById('ch-name').textContent='Profile');
+  document.getElementById('ch-sub').innerHTML='';
+
+  // Populate profile fields
+  document.getElementById('profile-current-username').value = ME.username;
+  document.getElementById('profile-new-username').value = '';
+  document.getElementById('profile-cur-pass').value = '';
+  document.getElementById('profile-new-pass').value = '';
+  document.getElementById('profile-conf-pass').value = '';
+  document.getElementById('profile-username-msg').textContent = '';
+  document.getElementById('profile-password-msg').textContent = '';
+
+  // Hero avatar
+  setAvatarEl(document.getElementById('profile-big-avatar'), ME.username, ME.avatar);
+  document.getElementById('profile-hero-name').textContent = ME.username;
+  document.getElementById('profile-hero-sub').textContent = ME.isAdmin ? '// admin · owner' : '// nexus member';
+}
+
+function closeProfile() {
+  document.getElementById('profile-panel').style.display='none';
+  // Return to previous state or general
+  if(currentChat === 'general') { openGeneral(); }
+  else if(currentChat && currentChat.type==='dm') { openDM(currentChat.user); }
+  else if(currentChat && currentChat.type==='admin') { openAdmin(); }
+  else {
+    document.getElementById('no-chat').style.display='flex';
+    document.getElementById('ch-name').textContent='Select a chat';
+    document.getElementById('ch-sub').innerHTML='';
+  }
+}
+
+// Avatar file pick handler
+async function handleAvatarInput(evt) {
+  const file = evt.target.files[0];
+  evt.target.value = '';
+  if(!file) return;
+  if(file.size > 5*1024*1024){showToast('⚠️','Error','Avatar must be under 5MB');return;}
+
+  const fd = new FormData();
+  fd.append('avatar', file);
+  try {
+    const r = await fetch('/api/profile/avatar', {method:'POST', body:fd});
+    const data = await r.json();
+    if(data.error){showToast('⚠️','Error',data.error);return;}
+    ME.avatar = data.avatar;
+    userAvatarCache[ME.username] = data.avatar;
+    // Update all avatar elements immediately
+    setAvatarEl(document.getElementById('profile-big-avatar'), ME.username, ME.avatar);
+    setAvatarEl(document.getElementById('me-avatar'), ME.username, ME.avatar);
+    refreshHeaderAvatar();
+    showProfileMsg('profile-avatar-msg', 'Avatar updated!', true);
+    showToast('✅','Avatar updated','Your new avatar is live.');
+  } catch(e){ showToast('⚠️','Error','Upload failed'); }
+}
+
+async function saveUsername() {
+  const newU = document.getElementById('profile-new-username').value.trim();
+  if(!newU){ showProfileMsg('profile-username-msg','Enter a new username',false); return; }
+  if(newU === ME.username){ showProfileMsg('profile-username-msg','That\'s already your username',false); return; }
+  const btn = event.target;
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Saving…';
+  try {
+    const r = await api('/api/profile/username','POST',{newUsername:newU});
+    if(r.error){ showProfileMsg('profile-username-msg',r.error,false); return; }
+    ME.username = r.username;
+    document.getElementById('profile-current-username').value = ME.username;
+    document.getElementById('profile-new-username').value = '';
+    document.getElementById('profile-hero-name').textContent = ME.username;
+    document.getElementById('me-uname').innerHTML = esc(ME.username)+(ME.isAdmin?'&nbsp;<span class="admin-crown">👑</span>':'');
+    refreshHeaderAvatar();
+    showProfileMsg('profile-username-msg','Username updated!',true);
+  } finally { btn.disabled=false; btn.textContent='Update Username'; }
+}
+
+async function savePassword() {
+  const cur = document.getElementById('profile-cur-pass').value;
+  const nw = document.getElementById('profile-new-pass').value;
+  const cf = document.getElementById('profile-conf-pass').value;
+  if(!cur||!nw||!cf){ showProfileMsg('profile-password-msg','Fill all password fields',false); return; }
+  if(nw !== cf){ showProfileMsg('profile-password-msg','New passwords do not match',false); return; }
+  if(nw.length < 4){ showProfileMsg('profile-password-msg','Password must be 4+ chars',false); return; }
+  const btn = event.target;
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Saving…';
+  try {
+    const r = await api('/api/profile/password','POST',{currentPassword:cur,newPassword:nw});
+    if(r.error){ showProfileMsg('profile-password-msg',r.error,false); return; }
+    document.getElementById('profile-cur-pass').value='';
+    document.getElementById('profile-new-pass').value='';
+    document.getElementById('profile-conf-pass').value='';
+    showProfileMsg('profile-password-msg','Password changed!',true);
+  } finally { btn.disabled=false; btn.textContent='Update Password'; }
+}
+
+function showProfileMsg(id, msg, ok) {
+  const el = document.getElementById(id);
+  if(!el) {
+    // fallback: use the nearest .profile-msg after the caller
+    return;
+  }
+  el.textContent = msg;
+  el.className = 'profile-msg '+(ok?'ok':'err');
+  setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 4000);
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
 async function loadAdminConvos() {
   const convos = await api('/api/admin/conversations','GET');
   const list = document.getElementById('admin-convo-list');
@@ -781,6 +1095,7 @@ async function loadAdminConvo(c, el) {
 function showChatView() {
   document.getElementById('no-chat').style.display='none';
   document.getElementById('admin-panel').style.display='none';
+  document.getElementById('profile-panel').style.display='none';
   const cv=document.getElementById('chat-view');
   cv.style.display='flex'; cv.style.flexDirection='column';
 }
@@ -873,13 +1188,20 @@ function updatePreview(){
 }
 function removePF(i){pendingFiles.splice(i,1);updatePreview();}
 
-// ── WEBRTC CALLING ────────────────────────────────────────────────────────────
-const ICE_SERVERS = {
-  iceServers: [
+// ── WEBRTC / METERED.CA ───────────────────────────────────────────────────────
+// Fetches fresh ICE servers (including TURN) from our backend which calls Metered.ca
+async function getIceServers() {
+  try {
+    const r = await fetch('/api/ice-servers');
+    const data = await r.json();
+    if(data.iceServers && data.iceServers.length) return data.iceServers;
+  } catch(e) { console.warn('ICE server fetch failed, using fallback'); }
+  // Hard fallback (STUN only) — calls may fail through strict NAT
+  return [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' }
-  ]
-};
+  ];
+}
 
 async function startCall(callType) {
   if(callState!=='idle') return;
@@ -900,17 +1222,17 @@ async function startCall(callType) {
     callState='idle'; return;
   }
 
-  // Show local preview in local video (muted)
-  const lv = document.getElementById('local-video');
-  lv.srcObject = localStream;
+  document.getElementById('local-video').srcObject = localStream;
 
-  // Show outgoing call UI
+  // Outgoing call UI
   document.getElementById('outgoing-call').classList.add('visible');
   document.getElementById('oc-peer-name').textContent = peer;
-  document.getElementById('oc-avatar').textContent = peer[0].toUpperCase();
+  const peerAvatar = userAvatarCache[peer];
+  setAvatarEl(document.getElementById('oc-avatar'), peer, peerAvatar);
 
-  // Create peer connection
-  peerConn = new RTCPeerConnection(ICE_SERVERS);
+  // Create peer connection using Metered.ca ICE servers
+  const iceServers = await getIceServers();
+  peerConn = new RTCPeerConnection({ iceServers });
   localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
 
   peerConn.onicecandidate = e => {
@@ -919,8 +1241,7 @@ async function startCall(callType) {
     }
   };
   peerConn.ontrack = e => {
-    const rv = document.getElementById('remote-video');
-    rv.srcObject = e.streams[0];
+    document.getElementById('remote-video').srcObject = e.streams[0];
   };
   peerConn.onconnectionstatechange = () => {
     if(peerConn.connectionState==='connected') {
@@ -932,7 +1253,6 @@ async function startCall(callType) {
 
   const offer = await peerConn.createOffer();
   await peerConn.setLocalDescription(offer);
-
   ws.send(JSON.stringify({type:'call_offer', to:peer, offer, callType, callId:activeCallId}));
 
   // 30-second timeout
@@ -947,7 +1267,6 @@ async function startCall(callType) {
 
 async function handleCallOffer(data) {
   if(callState!=='idle') {
-    // Already in call — auto decline
     ws.send(JSON.stringify({type:'call_decline', to:data.from, callId:data.callId}));
     return;
   }
@@ -957,25 +1276,21 @@ async function handleCallOffer(data) {
   activeCallType = data.callType;
   pendingOffer = data.offer;
 
-  // Show incoming call UI
   document.getElementById('ic-caller-name').textContent = data.from;
-  document.getElementById('ic-avatar').textContent = data.from[0].toUpperCase();
+  const callerAvatar = userAvatarCache[data.from];
+  setAvatarEl(document.getElementById('ic-avatar'), data.from, callerAvatar);
   document.getElementById('ic-call-type').textContent = data.callType==='video'?'🎥 Incoming Video Call':'📞 Incoming Audio Call';
   document.getElementById('incoming-call').classList.add('visible');
 
   playRingtone();
 
-  // Show system notification
   if(Notification.permission==='granted') {
     new Notification(`${data.from} is calling`, {body: `${data.callType==='video'?'Video':'Audio'} call`, icon:'/favicon.ico'});
   }
 
-  // Auto-timeout: if not answered within 30s
   callTimeoutTimer = setTimeout(() => {
-    if(callState==='incoming') {
-      declineCall();
-    }
-  }, 30000);
+    if(callState==='incoming') declineCall();
+  }, 99999999999999);
 }
 
 async function acceptCall() {
@@ -995,7 +1310,9 @@ async function acceptCall() {
 
   document.getElementById('local-video').srcObject = localStream;
 
-  peerConn = new RTCPeerConnection(ICE_SERVERS);
+  // Use Metered.ca ICE servers
+  const iceServers = await getIceServers();
+  peerConn = new RTCPeerConnection({ iceServers });
   localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
 
   peerConn.onicecandidate = e => {
@@ -1004,8 +1321,7 @@ async function acceptCall() {
     }
   };
   peerConn.ontrack = e => {
-    const rv = document.getElementById('remote-video');
-    rv.srcObject = e.streams[0];
+    document.getElementById('remote-video').srcObject = e.streams[0];
   };
   peerConn.onconnectionstatechange = () => {
     if(peerConn.connectionState==='connected') {
@@ -1018,7 +1334,6 @@ async function acceptCall() {
   await peerConn.setRemoteDescription(pendingOffer);
   const answer = await peerConn.createAnswer();
   await peerConn.setLocalDescription(answer);
-
   ws.send(JSON.stringify({type:'call_answer', to:activeCallPeer, answer, callId:activeCallId}));
 
   callState = 'active';
@@ -1055,7 +1370,6 @@ function showActiveCallUI() {
   ac.classList.add('visible');
   document.getElementById('call-peer-name').textContent = activeCallPeer;
   document.getElementById('call-status').textContent = 'Connecting...';
-  // Video vs audio
   if(activeCallType==='video') {
     ac.classList.remove('audio-only');
     document.getElementById('cam-btn').style.display='flex';
@@ -1064,11 +1378,11 @@ function showActiveCallUI() {
   } else {
     ac.classList.add('audio-only');
     document.getElementById('cam-btn').style.display='none';
-    document.getElementById('audio-only-avatar').style.display='flex';
-    document.getElementById('audio-only-avatar').textContent=activeCallPeer[0].toUpperCase();
+    const aoa = document.getElementById('audio-only-avatar');
+    aoa.style.display='flex';
+    setAvatarEl(aoa, activeCallPeer, userAvatarCache[activeCallPeer]);
     document.getElementById('local-video').style.display='none';
   }
-  // Reset mute/cam state
   isMuted=false; isCamOff=false;
   document.getElementById('mute-btn').textContent='🎤';
   document.getElementById('mute-btn').classList.remove('muted');
@@ -1153,12 +1467,10 @@ function requestNotifPermission() {
 }
 
 function showMsgNotification(msg, from) {
-  // In-app toast
   if(document.hidden || currentChat!==from) {
     const text = msg.type==='text' ? msg.content : `[${msg.type}]`;
     showToast('💬', from, text, ()=>{ if(from!=='General') openDM(from); });
   }
-  // OS notification when page hidden
   if(document.hidden && Notification.permission==='granted') {
     new Notification(`New message from ${from}`, {
       body: msg.type==='text' ? msg.content.slice(0,80) : `Sent a ${msg.type}`,
