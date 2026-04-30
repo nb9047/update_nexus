@@ -747,7 +747,13 @@ async function startApp(user) {
   setAvatarEl(document.getElementById('me-avatar'), ME.username, ME.avatar);
   refreshHeaderAvatar();
 
-  if(ME.isAdmin) document.getElementById('admin-sidebar-btn').style.display='flex';
+  if(ME.isAdmin) {
+    document.getElementById('admin-sidebar-btn').style.display='flex';
+  } else {
+    // Ensure the admin panel element is completely hidden for non-admins
+    document.getElementById('admin-sidebar-btn').style.display='none';
+    document.getElementById('admin-panel').style.display='none';
+  }
   await loadUsers();
   openGeneral();
   connectWS();
@@ -923,7 +929,11 @@ async function openDM(user) {
 }
 
 function openAdmin() {
-  if(!ME.isAdmin) return;
+  // RBAC: hard-stop — never render admin UI for non-admins under any circumstance
+  if (!ME || !ME.isAdmin) {
+    showToast('🚫', 'Access Denied', 'Admin panel is restricted.');
+    return;
+  }
   currentChat = {type:'admin'};
   setActive('item-admin');
   document.getElementById('no-chat').style.display='none';
@@ -1050,6 +1060,7 @@ function showProfileMsg(id, msg, ok) {
 
 // ── ADMIN ─────────────────────────────────────────────────────────────────────
 async function loadAdminConvos() {
+  if (!ME || !ME.isAdmin) return; // RBAC: silent guard
   const convos = await api('/api/admin/conversations','GET');
   const list = document.getElementById('admin-convo-list');
   list.innerHTML = '';
@@ -1065,6 +1076,7 @@ async function loadAdminConvos() {
 }
 
 async function loadAdminConvo(c, el) {
+  if (!ME || !ME.isAdmin) return; // RBAC: silent guard
   document.querySelectorAll('.convo-item').forEach(x=>x.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('admin-msgs-title').textContent = c.type==='general'?'#general':c.participants.join(' ↔ ');

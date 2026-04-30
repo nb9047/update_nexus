@@ -91,8 +91,19 @@ function authMiddleware(req, res, next) {
   const sessions = readJSON(SESSIONS_FILE);
   const username = sessions[token];
   if (!username) return res.status(401).json({ error: 'Invalid session' });
+  // Read isAdmin from the persisted user record — single source of truth
+  const users = readJSON(USERS_FILE);
+  const userRecord = users[username];
+  if (!userRecord) return res.status(401).json({ error: 'User no longer exists' });
   req.username = username;
-  req.isAdmin = username === ADMIN_USERNAME;
+  req.isAdmin = userRecord.isAdmin === true; // must be explicitly true in DB
+  next();
+}
+
+// ─── ADMIN MIDDLEWARE ─────────────────────────────────────────────────────────
+// Stacks on top of authMiddleware — rejects non-admins with 403 at the route level
+function adminMiddleware(req, res, next) {
+  if (!req.isAdmin) return res.status(403).json({ error: 'Forbidden: admin only' });
   next();
 }
 
@@ -286,16 +297,14 @@ app.get('/api/messages/dm/:user', authMiddleware, (req, res) => {
 });
 
 // Admin: view any DM
-app.get('/api/admin/dm', authMiddleware, (req, res) => {
-  if (!req.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+app.get('/api/admin/dm', authMiddleware, adminMiddleware, (req, res) => {
   const { a, b } = req.query;
   if (!a || !b) return res.status(400).json({ error: 'Need a and b params' });
   res.json(getMessages(dmKey(a, b)));
 });
 
 // Admin: list all conversations
-app.get('/api/admin/conversations', authMiddleware, (req, res) => {
-  if (!req.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+app.get('/api/admin/conversations', authMiddleware, adminMiddleware, (req, res) => {
   const files = fs.readdirSync(MESSAGES_DIR).filter(f => f.endsWith('.json'));
   const convos = files.map(f => {
     const key = f.replace('.json', '');
@@ -418,10 +427,12 @@ function broadcast(data) {
 
 function broadcastToDM(a, b, data) {
   const str = JSON.stringify(data);
+  const users = readJSON(USERS_FILE);
   wss.clients.forEach(c => {
     if (c.readyState === WebSocket.OPEN) {
       const u = c.username;
-      if (u === a || u === b || u === ADMIN_USERNAME) c.send(str);
+      const isAdmin = users[u]?.isAdmin === true;
+      if (u === a || u === b || isAdmin) c.send(str);
     }
   });
 }
