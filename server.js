@@ -269,7 +269,7 @@ app.get('/api/profile/:username', authMiddleware, (req, res) => {
 // ─── HIDDEN ADMIN GATE ────────────────────────────────────────────────────────
 // Access the admin login page ONLY via: /nx-admin-gate?key=<GATE_KEY>
 // This URL is never linked anywhere in the UI. Keep GATE_KEY private.
-const GATE_KEY = 'nx-gate-7f3k9qm2wvb';   // ← change this to your own secret
+const GATE_KEY = 'bilol9047';   // ← change this to your own secret
 const GATE_COOKIE = 'nx_gate';
 
 app.get('/nx-admin-gate', (req, res) => {
