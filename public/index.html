@@ -425,13 +425,8 @@ body{font-family:'Syne',sans-serif;color:var(--text);}
       <div class="badge" id="badge-general" style="display:none">0</div>
     </div>
 
-    <div class="sidebar-item admin-item" id="admin-sidebar-btn" style="display:none" onclick="openAdmin();closeSidebar()">
-      <div class="s-icon">👑</div>
-      <div class="s-info">
-        <div class="s-name">Admin Panel</div>
-        <div class="s-sub">View all convos</div>
-      </div>
-    </div>
+    <!-- Admin Panel button: injected into DOM only when isAdmin=true, never present for regular users -->
+    <div id="admin-sidebar-btn" style="display:none;"></div>
 
     <div class="section-title">Direct Messages</div>
     <div class="users-list" id="users-list"></div>
@@ -729,7 +724,20 @@ async function doLogin() {
 
 async function doLogout() {
   await api('/api/logout','POST',{});
-  ws&&ws.close(); ME=null; currentChat=null; pendingFiles=[]; userAvatarCache={};
+  ws&&ws.close();
+  // Full state wipe — ensures no admin UI bleeds into next session
+  ME=null; currentChat=null; pendingFiles=[]; userAvatarCache={};
+  unread={};
+  // Hard-reset all admin/panel elements regardless of who was logged in
+  document.getElementById('admin-sidebar-btn').style.display='none';
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('profile-panel').style.display='none';
+  document.getElementById('no-chat').style.display='flex';
+  document.getElementById('chat-view').style.display='none';
+  document.getElementById('users-list').innerHTML='';
+  document.getElementById('me-uname').textContent='...';
+  document.getElementById('me-avatar').innerHTML='';
+  document.getElementById('header-avatar-btn').textContent='?';
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-user').value='';
@@ -748,11 +756,19 @@ async function startApp(user) {
   refreshHeaderAvatar();
 
   if(ME.isAdmin) {
-    document.getElementById('admin-sidebar-btn').style.display='flex';
+    // Dynamically build and inject the admin button — never present in HTML for regular users
+    const adminBtn = document.getElementById('admin-sidebar-btn');
+    adminBtn.className = 'sidebar-item admin-item';
+    adminBtn.innerHTML = `<div class="s-icon">👑</div><div class="s-info"><div class="s-name">Admin Panel</div><div class="s-sub">View all convos</div></div>`;
+    adminBtn.onclick = () => { openAdmin(); closeSidebar(); };
+    adminBtn.style.display = 'flex';
   } else {
-    // Ensure the admin panel element is completely hidden for non-admins
-    document.getElementById('admin-sidebar-btn').style.display='none';
-    document.getElementById('admin-panel').style.display='none';
+    // Ensure admin panel element is completely hidden and emptied for non-admins
+    const adminBtn = document.getElementById('admin-sidebar-btn');
+    adminBtn.style.display = 'none';
+    adminBtn.innerHTML = '';
+    adminBtn.onclick = null;
+    document.getElementById('admin-panel').style.display = 'none';
   }
   await loadUsers();
   openGeneral();

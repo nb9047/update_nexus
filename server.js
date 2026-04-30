@@ -168,12 +168,15 @@ app.get('/api/me', authMiddleware, (req, res) => {
 // ─── USERS ROUTE ──────────────────────────────────────────────────────────────
 app.get('/api/users', authMiddleware, (req, res) => {
   const users = readJSON(USERS_FILE);
-  const list = Object.keys(users).map(u => ({
-    username: u,
-    online: onlineUsers.has(u),
-    isAdmin: u === ADMIN_USERNAME,
-    avatar: users[u].avatar || null
-  }));
+  const list = Object.keys(users)
+    // Admin account is completely invisible to regular users in all public lists
+    .filter(u => req.isAdmin || users[u].isAdmin !== true)
+    .map(u => ({
+      username: u,
+      online: onlineUsers.has(u),
+      isAdmin: users[u].isAdmin === true,
+      avatar: users[u].avatar || null
+    }));
   res.json(list);
 });
 
@@ -248,20 +251,44 @@ app.post('/api/profile/password', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Public profile lookup (for viewing other users)
+// Public profile lookup (for viewing other users) — admin profile is not publicly visible
 app.get('/api/profile/:username', authMiddleware, (req, res) => {
   const users = readJSON(USERS_FILE);
   const user = users[req.params.username];
   if (!user) return res.status(404).json({ error: 'User not found' });
+  // Non-admins cannot look up the admin profile
+  if (user.isAdmin === true && !req.isAdmin) return res.status(404).json({ error: 'User not found' });
   res.json({
     username: req.params.username,
     avatar: user.avatar || null,
-    isAdmin: req.params.username === ADMIN_USERNAME,
+    isAdmin: user.isAdmin === true,
     created: user.created
   });
 });
 
-// ─── METERED.CA ICE SERVERS ───────────────────────────────────────────────────
+// ─── HIDDEN ADMIN GATE ────────────────────────────────────────────────────────
+// Access the admin login page ONLY via: /nx-admin-gate?key=<GATE_KEY>
+// This URL is never linked anywhere in the UI. Keep GATE_KEY private.
+const GATE_KEY = 'nx-gate-7f3k9qm2wvb';   // ← change this to your own secret
+const GATE_COOKIE = 'nx_gate';
+
+app.get('/nx-admin-gate', (req, res) => {
+  if (req.query.key !== GATE_KEY) {
+    // Return a generic 404 — reveals nothing about the gate's existence
+    return res.status(404).send('Not found');
+  }
+  // Set a short-lived gate cookie (10 minutes), then redirect to admin login
+  res.cookie(GATE_COOKIE, GATE_KEY, { httpOnly: true, maxAge: 10 * 60 * 1000 });
+  res.redirect('/admin-login.html');
+});
+
+// Serve admin login page only when the gate cookie is present
+app.get('/admin-login.html', (req, res) => {
+  if (req.cookies?.[GATE_COOKIE] !== GATE_KEY) return res.status(404).send('Not found');
+  res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
+});
+
+
 // Frontend fetches this before every call to get fresh TURN credentials
 app.get('/api/ice-servers', authMiddleware, async (req, res) => {
   try {
