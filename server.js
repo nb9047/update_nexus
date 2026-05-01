@@ -24,7 +24,7 @@ const PUSH_SUBS_FILE = path.join(DATA_DIR, 'push_subs.json');
 
 // ─── METERED.CA CONFIG ────────────────────────────────────────────────────────
 const METERED_API_KEY = 'oyqLSsOHS1mm26Lx2i4SXNKYvZfwfyP84YA-gYXwjX6yeRAP';
-const METERED_APP_NAME = 'nexuschat';
+const METERED_APP_NAME = 'bilol'; // bilol.metered.live — confirmed from dashboard
 
 // ─── INIT DIRS ────────────────────────────────────────────────────────────────
 [DATA_DIR, UPLOADS_DIR, MESSAGES_DIR].forEach(d => {
@@ -117,18 +117,19 @@ app.post('/api/register', async (req, res) => {
   if (username.length < 3) return res.status(400).json({ error: 'Username must be 3+ chars' });
   if (password.length < 4) return res.status(400).json({ error: 'Password must be 4+ chars' });
   if (!/^[a-zA-Z0-9_]+$/.test(username)) return res.status(400).json({ error: 'Username: letters, numbers, _ only' });
+  // Block admin username from public registration — must use the gated admin page
+  if (username === ADMIN_USERNAME) return res.status(403).json({ error: 'That username is reserved.' });
   const users = readJSON(USERS_FILE);
   if (users[username]) return res.status(400).json({ error: 'Username already taken' });
   const hash = await bcrypt.hash(password, 10);
-  users[username] = { password: hash, created: Date.now(), isAdmin: username === ADMIN_USERNAME, avatar: null };
+  users[username] = { password: hash, created: Date.now(), isAdmin: false, avatar: null };
   writeJSON(USERS_FILE, users);
   const token = uuidv4();
   const sessions = readJSON(SESSIONS_FILE);
   sessions[token] = username;
   writeJSON(SESSIONS_FILE, sessions);
-  // FIX: 1-year maxAge ensures accounts persist across browser restarts
   res.cookie('session', token, { httpOnly: true, maxAge: 365 * 24 * 60 * 60 * 1000 });
-  res.json({ ok: true, username, isAdmin: username === ADMIN_USERNAME, avatar: null });
+  res.json({ ok: true, username, isAdmin: false, avatar: null });
 });
 
 app.post('/api/login', async (req, res) => {
@@ -267,9 +268,8 @@ app.get('/api/profile/:username', authMiddleware, (req, res) => {
 });
 
 // ─── HIDDEN ADMIN GATE ────────────────────────────────────────────────────────
-// Access the admin login page ONLY via: /nx-admin-gate?key=<GATE_KEY>
-// This URL is never linked anywhere in the UI. Keep GATE_KEY private.
-const GATE_KEY = 'bilol9047';   // ← change this to your own secret
+// Access the admin login page ONLY via: /nx-admin-gate?key=bilol9047
+const GATE_KEY = 'bilol9047';   // gate URL: /nx-admin-gate?key=bilol9047
 const GATE_COOKIE = 'nx_gate';
 
 app.get('/nx-admin-gate', (req, res) => {
@@ -286,6 +286,28 @@ app.get('/nx-admin-gate', (req, res) => {
 app.get('/admin-login.html', (req, res) => {
   if (req.cookies?.[GATE_COOKIE] !== GATE_KEY) return res.status(404).send('Not found');
   res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
+});
+
+// Gated admin account creation — only callable when gate cookie is valid
+// This is the ONLY way to create the owner account
+app.post('/api/admin-register', async (req, res) => {
+  if (req.cookies?.[GATE_COOKIE] !== GATE_KEY) return res.status(404).json({ error: 'Not found' });
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
+  if (password.length < 4) return res.status(400).json({ error: 'Password must be 4+ chars' });
+  if (username !== ADMIN_USERNAME) return res.status(403).json({ error: 'Invalid admin username' });
+  const users = readJSON(USERS_FILE);
+  if (users[username]) return res.status(400).json({ error: 'Admin account already exists. Please log in instead.' });
+  const hash = await bcrypt.hash(password, 10);
+  users[username] = { password: hash, created: Date.now(), isAdmin: true, avatar: null };
+  writeJSON(USERS_FILE, users);
+  const token = uuidv4();
+  const sessions = readJSON(SESSIONS_FILE);
+  sessions[token] = username;
+  writeJSON(SESSIONS_FILE, sessions);
+  res.cookie('session', token, { httpOnly: true, maxAge: 365 * 24 * 60 * 60 * 1000 });
+  res.clearCookie(GATE_COOKIE);
+  res.json({ ok: true, username, isAdmin: true, avatar: null });
 });
 
 

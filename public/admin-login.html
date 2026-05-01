@@ -6,37 +6,42 @@
 <title>Nexus · Secure Access</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--border:#2a2a38;--accent:#7c6af7;--accent2:#f76ab4;--text:#e8e8f0;--text2:#9090a8;--text3:#5a5a70;--danger:#f76a6a;}
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--border:#2a2a38;--accent:#7c6af7;--text:#e8e8f0;--text2:#9090a8;--text3:#5a5a70;--danger:#f76a6a;--red1:#c0392b;--red2:#f76a6a;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Syne',sans-serif;color:var(--text);}
 body{display:flex;align-items:center;justify-content:center;
   background:radial-gradient(ellipse at 20% 50%,#1a0f3a 0%,transparent 60%),
-             radial-gradient(ellipse at 80% 20%,#1a0a0a 0%,transparent 60%),var(--bg);
-  position:relative;}
+             radial-gradient(ellipse at 80% 20%,#1a0a0a 0%,transparent 60%),var(--bg);position:relative;}
 body::before{content:'';position:absolute;inset:0;
   background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,var(--border) 39px,var(--border) 40px),
                    repeating-linear-gradient(90deg,transparent,transparent 39px,var(--border) 39px,var(--border) 40px);opacity:.08;}
-.box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:400px;position:relative;
+.box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:420px;position:relative;
   box-shadow:0 0 80px rgba(124,106,247,.12),0 8px 32px rgba(0,0,0,.5);}
 .box::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:1px;
   background:linear-gradient(90deg,transparent,#f76a6a,transparent);}
-.logo{text-align:center;margin-bottom:32px;}
+.logo{text-align:center;margin-bottom:28px;}
 .logo-icon{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;
   background:linear-gradient(135deg,#f76a6a,#f7c96a);border-radius:14px;font-size:24px;margin-bottom:12px;}
 .logo h1{font-size:22px;font-weight:800;letter-spacing:-.5px;}
 .logo p{color:var(--text3);font-size:12px;font-family:'DM Mono',monospace;margin-top:5px;letter-spacing:.5px;}
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:22px;}
+.tab{flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--text2);
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.tab.active{background:var(--red1);color:#fff;box-shadow:0 2px 12px rgba(192,57,43,.4);}
 .warning-bar{background:rgba(247,106,106,.08);border:1px solid rgba(247,106,106,.2);border-radius:10px;
-  padding:10px 14px;margin-bottom:24px;display:flex;align-items:center;gap:10px;font-size:12px;color:#f7a0a0;font-family:'DM Mono',monospace;}
-.warning-bar span{font-size:16px;}
-.field{margin-bottom:16px;}
+  padding:10px 14px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:12px;color:#f7a0a0;font-family:'DM Mono',monospace;}
+.warning-bar span{font-size:16px;flex-shrink:0;}
+.field{margin-bottom:14px;}
 .field label{display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace;letter-spacing:.8px;text-transform:uppercase;}
 .field input{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
   color:var(--text);font-family:'Syne',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
 .field input:focus{border-color:#f76a6a;box-shadow:0 0 0 3px rgba(247,106,106,.12);}
-.btn{width:100%;padding:13px;background:linear-gradient(135deg,#c0392b,#f76a6a);border:none;border-radius:10px;
+.btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--red1),var(--red2));border:none;border-radius:10px;
   color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;}
 .btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(247,106,106,.4);}
-.err{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;font-family:'DM Mono',monospace;display:none;}
+.btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none;}
+.err{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;font-family:'DM Mono',monospace;min-height:18px;}
+.ok-msg{color:#4ade80;font-size:13px;margin-top:12px;text-align:center;font-family:'DM Mono',monospace;min-height:18px;}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .back-link{text-align:center;margin-top:20px;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;}
@@ -51,44 +56,94 @@ body::before{content:'';position:absolute;inset:0;
     <h1>Secure Admin Access</h1>
     <p>// restricted · authorised personnel only</p>
   </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+    <button class="tab" id="tab-register" onclick="switchTab('register')">First-Time Setup</button>
+  </div>
+
   <div class="warning-bar"><span>⚠️</span> This page is not publicly accessible. All access attempts are logged.</div>
-  <div class="field"><label>Admin Username</label><input type="text" id="u" autocomplete="off" placeholder="admin username" onkeydown="if(event.key==='Enter')go()"></div>
-  <div class="field"><label>Password</label><input type="password" id="p" placeholder="••••••••" onkeydown="if(event.key==='Enter')go()"></div>
-  <button class="btn" id="btn" onclick="go()">Access Admin Panel →</button>
-  <div class="err" id="err"></div>
+
+  <!-- LOGIN FORM -->
+  <div id="form-login">
+    <div class="field"><label>Admin Username</label><input type="text" id="l-user" value="owner" readonly style="color:var(--text3)"></div>
+    <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn" id="l-btn" onclick="doLogin()">Access Admin Panel →</button>
+    <div class="err" id="l-err"></div>
+  </div>
+
+  <!-- REGISTER FORM (first-time setup) -->
+  <div id="form-register" style="display:none">
+    <div class="field"><label>Admin Username</label><input type="text" value="owner" readonly style="color:var(--text3)"></div>
+    <div class="field"><label>Set Password</label><input type="password" id="r-pass" placeholder="choose a strong password" onkeydown="if(event.key==='Enter')doRegister()"></div>
+    <div class="field"><label>Confirm Password</label><input type="password" id="r-pass2" placeholder="confirm password" onkeydown="if(event.key==='Enter')doRegister()"></div>
+    <button class="btn" id="r-btn" onclick="doRegister()">Create Admin Account →</button>
+    <div class="err" id="r-err"></div>
+  </div>
+
   <div class="back-link"><a href="/">← Back to Nexus</a></div>
 </div>
+
 <script>
-async function go() {
-  const u = document.getElementById('u').value.trim();
-  const p = document.getElementById('p').value;
-  const err = document.getElementById('err');
-  const btn = document.getElementById('btn');
-  err.style.display = 'none';
-  if (!u || !p) { err.textContent = 'Fill all fields'; err.style.display = 'block'; return; }
+function switchTab(t) {
+  document.getElementById('tab-login').classList.toggle('active', t==='login');
+  document.getElementById('tab-register').classList.toggle('active', t==='register');
+  document.getElementById('form-login').style.display = t==='login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = t==='register' ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const pass = document.getElementById('l-pass').value;
+  const err = document.getElementById('l-err');
+  const btn = document.getElementById('l-btn');
+  err.textContent = '';
+  if (!pass) { err.textContent = 'Enter your password'; return; }
   btn.innerHTML = '<span class="spinner"></span>Verifying…'; btn.disabled = true;
   try {
     const r = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: u, password: p })
+      body: JSON.stringify({ username: 'owner', password: pass })
     });
     const data = await r.json();
-    if (data.error) { err.textContent = data.error; err.style.display = 'block'; return; }
+    if (data.error) { err.textContent = data.error; return; }
     if (!data.isAdmin) {
-      // Log out immediately if non-admin somehow submits — no partial session
       await fetch('/api/logout', { method: 'POST' });
       err.textContent = 'Access denied: not an admin account.';
-      err.style.display = 'block';
       return;
     }
-    // Success — go to main app; the admin sidebar will appear automatically
     window.location.href = '/';
   } catch(e) {
     err.textContent = 'Network error. Try again.';
-    err.style.display = 'block';
   } finally {
     btn.innerHTML = 'Access Admin Panel →'; btn.disabled = false;
+  }
+}
+
+async function doRegister() {
+  const pass = document.getElementById('r-pass').value;
+  const pass2 = document.getElementById('r-pass2').value;
+  const err = document.getElementById('r-err');
+  const btn = document.getElementById('r-btn');
+  err.textContent = '';
+  if (!pass) { err.textContent = 'Choose a password'; return; }
+  if (pass.length < 4) { err.textContent = 'Password must be 4+ characters'; return; }
+  if (pass !== pass2) { err.textContent = 'Passwords do not match'; return; }
+  btn.innerHTML = '<span class="spinner"></span>Creating…'; btn.disabled = true;
+  try {
+    const r = await fetch('/api/admin-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'owner', password: pass })
+    });
+    const data = await r.json();
+    if (data.error) { err.textContent = data.error; return; }
+    // Success — redirect to main app
+    window.location.href = '/';
+  } catch(e) {
+    err.textContent = 'Network error. Try again.';
+  } finally {
+    btn.innerHTML = 'Create Admin Account →'; btn.disabled = false;
   }
 }
 </script>
