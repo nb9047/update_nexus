@@ -1,70 +1,117 @@
-// Nexus Chat Service Worker - Push Notifications
-const CACHE_NAME = 'nexus-v2';
+// ── Nexus Chat Service Worker ─────────────────────────────────────────────────
+const CACHE_NAME = 'nexus-v1';
 
-self.addEventListener('install', e => {
-  self.skipWaiting();
+// Static assets to pre-cache on install
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  'https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap'
+];
+
+// ── INSTALL: pre-cache shell assets ──────────────────────────────────────────
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.allSettled(PRECACHE_ASSETS.map(url => cache.add(url).catch(() => {})))
+    ).then(() => self.skipWaiting())
+  );
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
+// ── ACTIVATE: purge old caches ────────────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
-// Handle push notifications from server
-self.addEventListener('push', e => {
-  if (!e.data) return;
-  let payload;
-  try { payload = e.data.json(); } catch { payload = { title: 'Nexus Chat', body: e.data.text() }; }
+// ── FETCH: routing strategy ───────────────────────────────────────────────────
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
 
-  const options = {
-    body: payload.body || 'You have a new message',
-    icon: '/icon.png',
-    badge: '/icon.png',
-    tag: payload.tag || 'nexus-msg',
-    renotify: true,
-    vibrate: [200, 100, 200],
-    data: payload.data || {},
-    actions: [
-      { action: 'open', title: 'Open Chat' },
-      { action: 'dismiss', title: 'Dismiss' }
-    ]
-  };
+  // Never intercept non-GET or WebSocket
+  if (request.method !== 'GET') return;
+  if (url.protocol === 'ws:' || url.protocol === 'wss:') return;
 
-  e.waitUntil(self.registration.showNotification(payload.title || 'Nexus Chat', options));
+  // API calls → Network-first (always try fresh data)
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(networkFirst(request)); return;
+  }
+
+  // Uploaded media → Cache-first (immutable once uploaded)
+  if (url.pathname.startsWith('/uploads/')) {
+    event.respondWith(cacheFirst(request)); return;
+  }
+
+  // Icons & manifest → Cache-first
+  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json') {
+    event.respondWith(cacheFirst(request)); return;
+  }
+
+  // App shell, fonts → Stale-while-revalidate (instant load + background refresh)
+  event.respondWith(staleWhileRevalidate(request));
 });
 
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  if (e.action === 'dismiss') return;
+// ── STRATEGIES ────────────────────────────────────────────────────────────────
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response.ok) (await caches.open(CACHE_NAME)).put(request, response.clone());
+    return response;
+  } catch { return new Response('Offline', { status: 503 }); }
+}
 
-  e.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
-      for (const client of windowClients) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) return clients.openWindow('/');
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) (await caches.open(CACHE_NAME)).put(request, response.clone());
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || new Response(
+      JSON.stringify({ error: 'You are offline' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  const fetchPromise = fetch(request).then(r => { if (r.ok) cache.put(request, r.clone()); return r; }).catch(() => null);
+  return cached || await fetchPromise || new Response('Offline', { status: 503 });
+}
+
+// ── PUSH NOTIFICATIONS ────────────────────────────────────────────────────────
+self.addEventListener('push', event => {
+  let data = { title: 'Nexus Chat', body: 'New message', icon: '/icons/icon-192x192.png' };
+  try { data = { ...data, ...event.data.json() }; } catch {}
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || '/icons/icon-192x192.png',
+      badge: '/icons/icon-72x72.png',
+      vibrate: [200, 100, 200],
+      data: { url: data.url || '/' }
     })
   );
 });
 
-// Cache static assets for offline resilience
-self.addEventListener('fetch', e => {
-  // Only cache GET requests for our own origin
-  if (e.request.method !== 'GET') return;
-  if (!e.request.url.startsWith(self.location.origin)) return;
-  // Don't cache API or WebSocket
-  if (e.request.url.includes('/api/') || e.request.url.includes('/uploads/')) return;
-
-  e.respondWith(
-    caches.open(CACHE_NAME).then(cache =>
-      cache.match(e.request).then(cached => {
-        const fetchPromise = fetch(e.request).then(response => {
-          cache.put(e.request, response.clone());
-          return response;
-        });
-        return cached || fetchPromise;
-      })
-    )
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => c.url.includes(self.location.origin));
+      if (existing) { existing.focus(); existing.navigate(url); }
+      else clients.openWindow(url);
+    })
   );
 });

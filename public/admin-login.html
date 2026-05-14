@@ -4,9 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexus · Secure Access</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#7c6af7">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--border:#2a2a38;--accent:#7c6af7;--text:#e8e8f0;--text2:#9090a8;--text3:#5a5a70;--danger:#f76a6a;--red1:#c0392b;--red2:#f76a6a;}
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--border:#2a2a38;--text:#e8e8f0;--text2:#9090a8;--text3:#5a5a70;--danger:#f76a6a;--red1:#c0392b;--red2:#f76a6a;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Syne',sans-serif;color:var(--text);}
 body{display:flex;align-items:center;justify-content:center;
@@ -41,7 +43,6 @@ body::before{content:'';position:absolute;inset:0;
 .btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(247,106,106,.4);}
 .btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none;}
 .err{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;font-family:'DM Mono',monospace;min-height:18px;}
-.ok-msg{color:#4ade80;font-size:13px;margin-top:12px;text-align:center;font-family:'DM Mono',monospace;min-height:18px;}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .back-link{text-align:center;margin-top:20px;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;}
@@ -56,23 +57,19 @@ body::before{content:'';position:absolute;inset:0;
     <h1>Secure Admin Access</h1>
     <p>// restricted · authorised personnel only</p>
   </div>
-
   <div class="tabs">
     <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
     <button class="tab" id="tab-register" onclick="switchTab('register')">First-Time Setup</button>
   </div>
-
   <div class="warning-bar"><span>⚠️</span> This page is not publicly accessible. All access attempts are logged.</div>
 
-  <!-- LOGIN FORM -->
   <div id="form-login">
-    <div class="field"><label>Admin Username</label><input type="text" id="l-user" value="owner" readonly style="color:var(--text3)"></div>
+    <div class="field"><label>Admin Username</label><input type="text" value="owner" readonly style="color:var(--text3)"></div>
     <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn" id="l-btn" onclick="doLogin()">Access Admin Panel →</button>
     <div class="err" id="l-err"></div>
   </div>
 
-  <!-- REGISTER FORM (first-time setup) -->
   <div id="form-register" style="display:none">
     <div class="field"><label>Admin Username</label><input type="text" value="owner" readonly style="color:var(--text3)"></div>
     <div class="field"><label>Set Password</label><input type="password" id="r-pass" placeholder="choose a strong password" onkeydown="if(event.key==='Enter')doRegister()"></div>
@@ -83,7 +80,6 @@ body::before{content:'';position:absolute;inset:0;
 
   <div class="back-link"><a href="/">← Back to Nexus</a></div>
 </div>
-
 <script>
 function switchTab(t) {
   document.getElementById('tab-login').classList.toggle('active', t==='login');
@@ -91,7 +87,6 @@ function switchTab(t) {
   document.getElementById('form-login').style.display = t==='login' ? 'block' : 'none';
   document.getElementById('form-register').style.display = t==='register' ? 'block' : 'none';
 }
-
 async function doLogin() {
   const pass = document.getElementById('l-pass').value;
   const err = document.getElementById('l-err');
@@ -100,26 +95,14 @@ async function doLogin() {
   if (!pass) { err.textContent = 'Enter your password'; return; }
   btn.innerHTML = '<span class="spinner"></span>Verifying…'; btn.disabled = true;
   try {
-    const r = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'owner', password: pass })
-    });
+    const r = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:'owner', password:pass}) });
     const data = await r.json();
     if (data.error) { err.textContent = data.error; return; }
-    if (!data.isAdmin) {
-      await fetch('/api/logout', { method: 'POST' });
-      err.textContent = 'Access denied: not an admin account.';
-      return;
-    }
+    if (!data.isAdmin) { await fetch('/api/logout',{method:'POST'}); err.textContent = 'Access denied.'; return; }
     window.location.href = '/';
-  } catch(e) {
-    err.textContent = 'Network error. Try again.';
-  } finally {
-    btn.innerHTML = 'Access Admin Panel →'; btn.disabled = false;
-  }
+  } catch { err.textContent = 'Network error. Try again.'; }
+  finally { btn.innerHTML = 'Access Admin Panel →'; btn.disabled = false; }
 }
-
 async function doRegister() {
   const pass = document.getElementById('r-pass').value;
   const pass2 = document.getElementById('r-pass2').value;
@@ -131,20 +114,12 @@ async function doRegister() {
   if (pass !== pass2) { err.textContent = 'Passwords do not match'; return; }
   btn.innerHTML = '<span class="spinner"></span>Creating…'; btn.disabled = true;
   try {
-    const r = await fetch('/api/admin-register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'owner', password: pass })
-    });
+    const r = await fetch('/api/admin-register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:'owner', password:pass}) });
     const data = await r.json();
     if (data.error) { err.textContent = data.error; return; }
-    // Success — redirect to main app
     window.location.href = '/';
-  } catch(e) {
-    err.textContent = 'Network error. Try again.';
-  } finally {
-    btn.innerHTML = 'Create Admin Account →'; btn.disabled = false;
-  }
+  } catch { err.textContent = 'Network error. Try again.'; }
+  finally { btn.innerHTML = 'Create Admin Account →'; btn.disabled = false; }
 }
 </script>
 </body>
