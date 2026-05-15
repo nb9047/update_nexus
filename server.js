@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const path = require('path');
+const https = require('https'); // used for Metered ICE fetch — works on all Node versions
 
 const app = express();
 const server = http.createServer(app);
@@ -292,13 +293,26 @@ app.post('/api/admin-register', async (req, res) => {
 });
 
 // ─── METERED.CA ICE SERVERS ───────────────────────────────────────────────────
+// Uses Node's built-in https module — works on Node 14, 16, 18+ without extra deps
+function fetchMeteredICE() {
+  return new Promise((resolve, reject) => {
+    const url = `https://${METERED_APP_NAME}.metered.live/api/v1/turn/credentials?apiKey=${METERED_API_KEY}`;
+    https.get(url, res => {
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => {
+        if (res.statusCode !== 200) return reject(new Error('Metered status ' + res.statusCode));
+        try { resolve(JSON.parse(raw)); }
+        catch (e) { reject(new Error('Metered JSON parse failed')); }
+      });
+    }).on('error', reject);
+  });
+}
+
 app.get('/api/ice-servers', authMiddleware, async (req, res) => {
   try {
-    const response = await fetch(
-      `https://${METERED_APP_NAME}.metered.live/api/v1/turn/credentials?apiKey=${METERED_API_KEY}`
-    );
-    if (!response.ok) throw new Error('Metered API responded with ' + response.status);
-    const iceServers = await response.json();
+    const iceServers = await fetchMeteredICE();
+    console.log('[Metered] ICE servers fetched:', iceServers.length, 'entries');
     res.json({ iceServers });
   } catch (err) {
     console.warn('[Metered] ICE fetch failed, using fallback STUN:', err.message);
